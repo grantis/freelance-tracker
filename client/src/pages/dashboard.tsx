@@ -69,14 +69,14 @@ export default function Dashboard() {
                 clients={clients || []}
                 selectedClient={selectedClient}
                 onSelectClient={setSelectedClient}
-                isFreelancer={user.isFreelancer}
+                isFreelancer={user.isAdmin}
               />
             </CardContent>
           </Card>
 
           {selectedClient && (
             <>
-              {user.isFreelancer && (
+              {user.isAdmin && (
                 <Card>
                   <CardHeader>
                     <CardTitle>Log Hours</CardTitle>

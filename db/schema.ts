@@ -16,6 +16,7 @@ export const users = pgTable("users", {
   name: text("name").notNull(),
   googleId: text("google_id").unique().notNull(),
   isFreelancer: boolean("is_freelancer").default(false).notNull(),
+  isAdmin: boolean("is_admin").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull()
 });
 

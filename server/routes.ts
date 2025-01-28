@@ -12,6 +12,8 @@ import crypto from "crypto";
 const SessionStore = MemoryStore(session);
 const sessionSecret = crypto.randomBytes(32).toString('hex');
 
+const ADMIN_EMAIL = "grantrigby1992@gmail.com";
+
 export function registerRoutes(app: Express): Server {
   // Session setup with secure settings
   app.use(session({
@@ -39,6 +41,7 @@ export function registerRoutes(app: Express): Server {
   }, async (accessToken, refreshToken, profile, done) => {
     try {
       console.log('Google OAuth callback received for profile:', profile.id);
+      const email = profile.emails?.[0].value || '';
 
       let user = await db.query.users.findFirst({
         where: eq(users.googleId, profile.id)
@@ -46,11 +49,14 @@ export function registerRoutes(app: Express): Server {
 
       if (!user) {
         console.log('Creating new user for Google profile:', profile.id);
+        const isAdmin = email === ADMIN_EMAIL;
+
         const [newUser] = await db.insert(users).values({
-          email: profile.emails?.[0].value || '',
+          email: email,
           name: profile.displayName,
           googleId: profile.id,
-          isFreelancer: false
+          isFreelancer: isAdmin, // Admin is automatically a freelancer
+          isAdmin: isAdmin
         }).returning();
         user = newUser;
       }
@@ -143,12 +149,12 @@ export function registerRoutes(app: Express): Server {
   app.get('/api/clients', requireAuth, async (req: any, res) => {
     const user = req.user;
     try {
-      if (user.isFreelancer) {
-        const clientsList = await db.query.clients.findMany({
-          where: eq(clients.freelancerId, user.id)
-        });
+      if (user.isAdmin) {
+        // Admin sees all clients
+        const clientsList = await db.query.clients.findMany();
         res.json(clientsList);
       } else {
+        // Regular users only see their own client record
         const clientsList = await db.query.clients.findMany({
           where: eq(clients.userId, user.id)
         });
@@ -159,10 +165,11 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Only admin can create clients
   app.post('/api/clients', requireAuth, async (req: any, res) => {
     const user = req.user;
-    if (!user.isFreelancer) {
-      res.status(403).json({ message: 'Only freelancers can create clients' });
+    if (!user.isAdmin) {
+      res.status(403).json({ message: 'Only admin can create clients' });
       return;
     }
 
@@ -170,7 +177,8 @@ export function registerRoutes(app: Express): Server {
       const [client] = await db.insert(clients).values({
         name: req.body.name,
         email: req.body.email,
-        freelancerId: user.id
+        freelancerId: user.id,
+        userId: req.body.userId // Link to the client's user account
       }).returning();
       res.json(client);
     } catch (error) {
@@ -187,7 +195,13 @@ export function registerRoutes(app: Express): Server {
         where: eq(clients.id, clientId)
       });
 
-      if (!client || (client.freelancerId !== user.id && client.userId !== user.id)) {
+      if (!client) {
+        res.status(404).json({ message: 'Client not found' });
+        return;
+      }
+
+      // Admin can see all hours, regular users can only see their own
+      if (!user.isAdmin && client.userId !== user.id) {
         res.status(403).json({ message: 'Unauthorized' });
         return;
       }
@@ -201,23 +215,15 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Only admin can log hours
   app.post('/api/hours', requireAuth, async (req: any, res) => {
     const user = req.user;
-    if (!user.isFreelancer) {
-      res.status(403).json({ message: 'Only freelancers can log hours' });
+    if (!user.isAdmin) {
+      res.status(403).json({ message: 'Only admin can log hours' });
       return;
     }
 
     try {
-      const client = await db.query.clients.findFirst({
-        where: eq(clients.id, req.body.clientId)
-      });
-
-      if (!client || client.freelancerId !== user.id) {
-        res.status(403).json({ message: 'Unauthorized' });
-        return;
-      }
-
       const [hour] = await db.insert(hours).values({
         clientId: req.body.clientId,
         description: req.body.description,
