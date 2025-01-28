@@ -43,15 +43,17 @@ export default function Login() {
   const authenticating = isAuthenticating();
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl">
-            Welcome to Grant Rigby's Freelance Tracker
+    <div className="min-h-screen bg-background flex items-center justify-center p-4 sm:p-6 md:p-8">
+      <Card className="w-full max-w-md mx-auto">
+        <CardHeader className="text-center space-y-2 sm:space-y-3">
+          <CardTitle className="text-xl sm:text-2xl md:text-3xl font-bold">
+            Freelance Tracker
           </CardTitle>
-          <CardDescription>Track my freelance hours with ease</CardDescription>
+          <CardDescription className="text-sm sm:text-base">
+            Track freelance hours with ease
+          </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           {authenticating ? (
             <div className="flex flex-col items-center gap-4 py-4">
               <LoadingSpinner size="lg" />
@@ -61,14 +63,13 @@ export default function Login() {
             </div>
           ) : (
             <Button 
-              className="w-full" 
+              className="w-full flex items-center justify-center gap-2 py-6" 
               onClick={() => {
-                // Set authenticating state before redirect
                 loginWithGoogle();
               }}
             >
-              <SiGoogle className="mr-2 h-4 w-4" />
-              Sign in with Google
+              <SiGoogle className="h-4 w-4" />
+              <span className="text-base">Sign in with Google</span>
             </Button>
           )}
         </CardContent>
