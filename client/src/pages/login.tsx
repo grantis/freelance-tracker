@@ -28,6 +28,8 @@ export default function Login() {
         description: "There was a problem signing in with Google. Please try again.",
         duration: 5000,
       });
+      // Clear the error from URL
+      window.history.replaceState({}, '', '/login');
     }
   }, [toast]);
 
@@ -52,14 +54,7 @@ export default function Login() {
               </p>
             </div>
           ) : (
-            <Button className="w-full" onClick={() => {
-              // Clear any existing error states before starting new auth
-              const params = new URLSearchParams(window.location.search);
-              if (params.has('error')) {
-                window.history.replaceState({}, '', '/login');
-              }
-              loginWithGoogle();
-            }}>
+            <Button className="w-full" onClick={loginWithGoogle}>
               <SiGoogle className="mr-2 h-4 w-4" />
               Sign in with Google
             </Button>
