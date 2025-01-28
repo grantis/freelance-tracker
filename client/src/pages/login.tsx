@@ -20,6 +20,7 @@ export default function Login() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.has('error')) {
+      // Immediately clear the authenticating state
       clearAuthenticating();
       toast({
         variant: "destructive",
@@ -30,6 +31,7 @@ export default function Login() {
     }
   }, [toast]);
 
+  // Only check authenticating state after handling potential errors
   const authenticating = isAuthenticating();
 
   return (
@@ -50,7 +52,14 @@ export default function Login() {
               </p>
             </div>
           ) : (
-            <Button className="w-full" onClick={loginWithGoogle}>
+            <Button className="w-full" onClick={() => {
+              // Clear any existing error states before starting new auth
+              const params = new URLSearchParams(window.location.search);
+              if (params.has('error')) {
+                window.history.replaceState({}, '', '/login');
+              }
+              loginWithGoogle();
+            }}>
               <SiGoogle className="mr-2 h-4 w-4" />
               Sign in with Google
             </Button>
