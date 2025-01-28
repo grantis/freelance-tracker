@@ -10,15 +10,25 @@ import { loginWithGoogle, isAuthenticating, clearAuthenticating } from "@/lib/au
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { SiGoogle } from "react-icons/si";
 import { useEffect } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { AlertCircle } from "lucide-react";
 
 export default function Login() {
-  // Clear auth progress when component mounts (in case of redirect back with error)
+  const { toast } = useToast();
+
+  // Clear auth progress and show error when component mounts (in case of redirect back with error)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.has('error')) {
       clearAuthenticating();
+      toast({
+        variant: "destructive",
+        title: "Authentication Failed",
+        description: "There was a problem signing in with Google. Please try again.",
+        duration: 5000,
+      });
     }
-  }, []);
+  }, [toast]);
 
   const authenticating = isAuthenticating();
 
