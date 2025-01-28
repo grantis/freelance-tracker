@@ -13,7 +13,7 @@ const SessionStore = MemoryStore(session);
 const sessionSecret = crypto.randomBytes(32).toString('hex');
 
 const ADMIN_EMAIL = "grantrigby1992@gmail.com";
-const ALLOWED_DOMAINS = ['freelance.grantrigby.dev', 'freelance-tracker-replit.app'];
+const CALLBACK_URL = 'https://freelance.grantrigby.dev/api/auth/google/callback';
 
 export function registerRoutes(app: Express): Server {
   // Session setup with secure settings
@@ -34,11 +34,11 @@ export function registerRoutes(app: Express): Server {
   app.use(passport.initialize());
   app.use(passport.session());
 
-  // Google OAuth setup with dynamic callback URL
+  // Google OAuth setup with fixed callback URL
   passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID!,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    callbackURL: process.env.GOOGLE_CALLBACK_URL,
+    callbackURL: CALLBACK_URL,
     proxy: true
   }, async (accessToken, refreshToken, profile, done) => {
     try {
@@ -100,27 +100,6 @@ export function registerRoutes(app: Express): Server {
   app.get('/api/auth/google',
     (req, res, next) => {
       console.log('Starting Google OAuth flow');
-      next();
-    },
-    (req, res, next) => {
-      const host = req.get('host');
-      console.log('Current host:', host);
-
-      if (process.env.NODE_ENV === 'production' && host) {
-        const domain = ALLOWED_DOMAINS.find(d => host.includes(d));
-        if (domain) {
-          const callbackUrl = `https://${domain}/api/auth/google/callback`;
-          console.log('Setting dynamic callback URL:', callbackUrl);
-          passport.authenticate('google', {
-            scope: ['profile', 'email'],
-            prompt: 'select_account',
-            callbackURL: callbackUrl
-          })(req, res, next);
-          return;
-        }
-      }
-
-      // Default authentication for development or unknown domains
       passport.authenticate('google', {
         scope: ['profile', 'email'],
         prompt: 'select_account'
