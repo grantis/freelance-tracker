@@ -104,7 +104,7 @@ export function registerRoutes(app: Express): Server {
       console.log('Starting Google OAuth flow');
       next();
     },
-    passport.authenticate('google', { 
+    passport.authenticate('google', {
       scope: ['profile', 'email'],
       prompt: 'select_account'
     })
