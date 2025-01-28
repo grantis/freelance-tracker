@@ -16,11 +16,18 @@ import { AlertCircle } from "lucide-react";
 export default function Login() {
   const { toast } = useToast();
 
-  // Clear auth progress and show error when component mounts (in case of redirect back with error)
+  // Clear any stale auth states on mount
+  useEffect(() => {
+    // If we're not on the callback URL with error, clear any stale auth states
+    if (!window.location.search.includes('error=')) {
+      clearAuthenticating();
+    }
+  }, []);
+
+  // Handle errors from OAuth callback
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.has('error')) {
-      // Immediately clear the authenticating state
       clearAuthenticating();
       toast({
         variant: "destructive",
@@ -28,12 +35,11 @@ export default function Login() {
         description: "There was a problem signing in with Google. Please try again.",
         duration: 5000,
       });
-      // Clear the error from URL
+      // Remove the error from URL
       window.history.replaceState({}, '', '/login');
     }
   }, [toast]);
 
-  // Only check authenticating state after handling potential errors
   const authenticating = isAuthenticating();
 
   return (
@@ -54,7 +60,13 @@ export default function Login() {
               </p>
             </div>
           ) : (
-            <Button className="w-full" onClick={loginWithGoogle}>
+            <Button 
+              className="w-full" 
+              onClick={() => {
+                // Set authenticating state before redirect
+                loginWithGoogle();
+              }}
+            >
               <SiGoogle className="mr-2 h-4 w-4" />
               Sign in with Google
             </Button>
