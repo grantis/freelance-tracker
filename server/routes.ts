@@ -49,6 +49,7 @@ export function registerRoutes(app: Express): Server {
 
       if (!user) {
         console.log('Creating new user for Google profile:', profile.id);
+        // Only set admin and freelancer status for specific email
         const isAdmin = email === ADMIN_EMAIL;
 
         const [newUser] = await db.insert(users).values({
