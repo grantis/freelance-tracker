@@ -24,12 +24,11 @@ export function registerRoutes(app: Express): Server {
       checkPeriod: 86400000 // 24 hours
     }),
     cookie: {
-      secure: true, // Require HTTPS
+      secure: process.env.NODE_ENV === 'production', // Require HTTPS in production
       httpOnly: true,
       sameSite: 'lax',
-      domain: process.env.NODE_ENV === 'production' ? 
-        process.env.CUSTOM_DOMAIN || 'freelance-tracker-replit.app' : 
-        undefined
+      // Don't set domain to allow the cookie to work on both domains
+      domain: undefined
     }
   }));
 
@@ -47,14 +46,12 @@ export function registerRoutes(app: Express): Server {
       console.log('Google OAuth callback received for profile:', profile.id);
       const email = profile.emails?.[0].value || '';
 
-      // First try to find existing user
       let user = await db.query.users.findFirst({
         where: eq(users.googleId, profile.id)
       });
 
       if (!user) {
         console.log('Creating new user for Google profile:', profile.id);
-        // Set admin and freelancer status for specific email
         const isAdmin = email === ADMIN_EMAIL;
         console.log('Is admin?', isAdmin, 'for email:', email);
 
@@ -63,7 +60,7 @@ export function registerRoutes(app: Express): Server {
           name: profile.displayName,
           googleId: profile.id,
           isAdmin: isAdmin,
-          isFreelancer: isAdmin // Admin is automatically a freelancer
+          isFreelancer: isAdmin
         }).returning();
         user = newUser;
       } else {
