@@ -28,23 +28,25 @@ export default function HoursTable({ clientId }: HoursTableProps) {
   }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Date</TableHead>
-          <TableHead>Description</TableHead>
-          <TableHead className="text-right">Hours</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {hours.map((hour) => (
-          <TableRow key={hour.id}>
-            <TableCell>{format(new Date(hour.date), 'PPP')}</TableCell>
-            <TableCell>{hour.description}</TableCell>
-            <TableCell className="text-right">{hour.hours}</TableCell>
+    <div className="w-full overflow-x-auto">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="whitespace-nowrap">Date</TableHead>
+            <TableHead className="min-w-[200px]">Description</TableHead>
+            <TableHead className="text-right whitespace-nowrap">Hours</TableHead>
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+        </TableHeader>
+        <TableBody>
+          {hours.map((hour) => (
+            <TableRow key={hour.id}>
+              <TableCell className="whitespace-nowrap">{format(new Date(hour.date), 'PPP')}</TableCell>
+              <TableCell>{hour.description}</TableCell>
+              <TableCell className="text-right whitespace-nowrap">{hour.hours}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   );
 }

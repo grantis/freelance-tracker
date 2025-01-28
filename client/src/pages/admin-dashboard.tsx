@@ -115,10 +115,9 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
   };
 
   return (
-    <div className="space-y-6">
-      {/* New Client Dialog */}
+    <div className="space-y-4 md:space-y-6">
       <Dialog open={isNewClientDialogOpen} onOpenChange={setIsNewClientDialogOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[425px] mx-4">
           <DialogHeader>
             <DialogTitle>Create New Client</DialogTitle>
             <DialogDescription>
@@ -168,7 +167,7 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
           <CardContent>
             <div className="space-y-4">
               {pendingApplications.map((application) => (
-                <div key={application.id} className="flex items-center justify-between p-4 border rounded-lg">
+                <div key={application.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-lg gap-4">
                   <div>
                     <h3 className="font-medium">{application.name}</h3>
                     <p className="text-sm text-muted-foreground">{application.email}</p>
@@ -176,7 +175,7 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
                       <p className="text-sm mt-2">{application.applicationNotes}</p>
                     )}
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 self-start sm:self-center">
                     <Button
                       size="sm"
                       onClick={() => handleApplicationResponse(application.id, true)}
@@ -201,12 +200,12 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
       )}
 
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between space-y-4 sm:space-y-0">
           <div>
             <CardTitle>Client Management</CardTitle>
             <CardDescription>Select a client or create a new one</CardDescription>
           </div>
-          <Button onClick={() => setIsNewClientDialogOpen(true)}>
+          <Button onClick={() => setIsNewClientDialogOpen(true)} className="w-full sm:w-auto">
             <Plus className="w-4 h-4 mr-2" />
             New Client
           </Button>
@@ -244,7 +243,7 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
             <CardHeader>
               <CardTitle>Hours Log</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="overflow-x-auto">
               <HoursTable clientId={selectedClient} />
             </CardContent>
           </Card>
