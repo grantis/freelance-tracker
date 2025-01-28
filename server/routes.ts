@@ -13,6 +13,7 @@ const SessionStore = MemoryStore(session);
 const sessionSecret = crypto.randomBytes(32).toString('hex');
 
 const ADMIN_EMAIL = "grantrigby1992@gmail.com";
+const ALLOWED_DOMAINS = ['freelance.grantrigby.dev', 'freelance-tracker-replit.app'];
 
 export function registerRoutes(app: Express): Server {
   // Session setup with secure settings
@@ -24,23 +25,21 @@ export function registerRoutes(app: Express): Server {
       checkPeriod: 86400000 // 24 hours
     }),
     cookie: {
-      secure: process.env.NODE_ENV === 'production', // Require HTTPS in production
+      secure: process.env.NODE_ENV === 'production',
       httpOnly: true,
-      sameSite: 'lax',
-      // Don't set domain to allow the cookie to work on both domains
-      domain: undefined
+      sameSite: 'lax'
     }
   }));
 
   app.use(passport.initialize());
   app.use(passport.session());
 
-  // Google OAuth setup with proper callback URL
+  // Google OAuth setup with dynamic callback URL
   passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID!,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    callbackURL: process.env.GOOGLE_CALLBACK_URL!,
-    proxy: true // Trust proxy for secure OAuth callbacks
+    callbackURL: process.env.GOOGLE_CALLBACK_URL,
+    proxy: true
   }, async (accessToken, refreshToken, profile, done) => {
     try {
       console.log('Google OAuth callback received for profile:', profile.id);
@@ -64,7 +63,6 @@ export function registerRoutes(app: Express): Server {
         }).returning();
         user = newUser;
       } else {
-        // Update existing user if needed
         if (email === ADMIN_EMAIL && (!user.isAdmin || !user.isFreelancer)) {
           const [updatedUser] = await db.update(users)
             .set({ isAdmin: true, isFreelancer: true })
@@ -104,10 +102,30 @@ export function registerRoutes(app: Express): Server {
       console.log('Starting Google OAuth flow');
       next();
     },
-    passport.authenticate('google', {
-      scope: ['profile', 'email'],
-      prompt: 'select_account'
-    })
+    (req, res, next) => {
+      const host = req.get('host');
+      console.log('Current host:', host);
+
+      if (process.env.NODE_ENV === 'production' && host) {
+        const domain = ALLOWED_DOMAINS.find(d => host.includes(d));
+        if (domain) {
+          const callbackUrl = `https://${domain}/api/auth/google/callback`;
+          console.log('Setting dynamic callback URL:', callbackUrl);
+          passport.authenticate('google', {
+            scope: ['profile', 'email'],
+            prompt: 'select_account',
+            callbackURL: callbackUrl
+          })(req, res, next);
+          return;
+        }
+      }
+
+      // Default authentication for development or unknown domains
+      passport.authenticate('google', {
+        scope: ['profile', 'email'],
+        prompt: 'select_account'
+      })(req, res, next);
+    }
   );
 
   app.get('/api/auth/google/callback',
