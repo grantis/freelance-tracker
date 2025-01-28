@@ -22,6 +22,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface AdminDashboardProps {
   user: User;
@@ -37,12 +38,12 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
   const { toast } = useToast();
   const [isNewClientDialogOpen, setIsNewClientDialogOpen] = useState(false);
 
-  const { data: clients, refetch: refetchClients } = useQuery<Client[]>({
+  const { data: clients, isLoading: clientsLoading, refetch: refetchClients } = useQuery<Client[]>({
     queryKey: ["/api/clients"],
     enabled: !!user,
   });
 
-  const { data: pendingApplications } = useQuery<Client[]>({
+  const { data: pendingApplications, isLoading: pendingLoading } = useQuery<Client[]>({
     queryKey: ["/api/clients/pending"],
     enabled: !!user,
   });
@@ -158,7 +159,7 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
         </DialogContent>
       </Dialog>
 
-      {pendingApplications?.length > 0 && (
+      {!pendingLoading && pendingApplications?.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle>Pending Applications</CardTitle>
@@ -199,6 +200,25 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
         </Card>
       )}
 
+      {pendingLoading && (
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-7 w-48" />
+            <Skeleton className="h-5 w-72 mt-2" />
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {[...Array(2)].map((_, index) => (
+                <div key={index} className="p-4 border rounded-lg">
+                  <Skeleton className="h-5 w-32 mb-2" />
+                  <Skeleton className="h-4 w-48" />
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <Card>
         <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between space-y-4 sm:space-y-0">
           <div>
@@ -216,6 +236,7 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
             selectedClient={selectedClient}
             onSelectClient={setSelectedClient}
             isFreelancer={true}
+            isLoading={clientsLoading}
           />
         </CardContent>
       </Card>

@@ -5,6 +5,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Client {
   id: number;
@@ -12,18 +13,24 @@ interface Client {
 }
 
 interface ClientSelectorProps {
-  clients: Client[];
+  clients?: Client[];
   selectedClient: number | null;
   onSelectClient: (clientId: number) => void;
   isFreelancer: boolean;
+  isLoading?: boolean;
 }
 
 export default function ClientSelector({
-  clients,
+  clients = [],
   selectedClient,
   onSelectClient,
-  isFreelancer
+  isFreelancer,
+  isLoading = false
 }: ClientSelectorProps) {
+  if (isLoading) {
+    return <Skeleton className="h-10 w-full" />;
+  }
+
   if (!clients.length) {
     return <div>No clients found.</div>;
   }
