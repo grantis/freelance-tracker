@@ -13,7 +13,8 @@ const SessionStore = MemoryStore(session);
 const sessionSecret = crypto.randomBytes(32).toString('hex');
 
 const ADMIN_EMAIL = "grantrigby1992@gmail.com";
-const CALLBACK_URL = 'https://freelance.grantrigby.dev/api/auth/google/callback';
+const DOMAIN = 'freelance.grantrigby.dev';
+const CALLBACK_URL = `https://${DOMAIN}/api/auth/google/callback`;
 
 export function registerRoutes(app: Express): Server {
   // Session setup with secure settings
@@ -27,7 +28,8 @@ export function registerRoutes(app: Express): Server {
     cookie: {
       secure: process.env.NODE_ENV === 'production',
       httpOnly: true,
-      sameSite: 'lax'
+      sameSite: 'lax',
+      domain: process.env.NODE_ENV === 'production' ? `.${DOMAIN}` : undefined
     }
   }));
 
@@ -103,6 +105,13 @@ export function registerRoutes(app: Express): Server {
       console.log('Current host:', req.get('host'));
       console.log('Protocol:', req.protocol);
       console.log('Using callback URL:', CALLBACK_URL);
+
+      // Only allow OAuth from the main domain in production
+      if (process.env.NODE_ENV === 'production' && req.get('host') !== DOMAIN) {
+        console.log('Invalid host detected:', req.get('host'));
+        return res.redirect(`https://${DOMAIN}/login`);
+      }
+
       passport.authenticate('google', {
         scope: ['profile', 'email'],
         prompt: 'select_account'
