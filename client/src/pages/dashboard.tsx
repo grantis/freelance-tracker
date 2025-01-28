@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useUser, clearAuthenticating } from "@/lib/auth";
+import { useUser, clearAuthenticating, useLogout } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import HoursTable from "@/components/hours-table";
@@ -14,6 +14,7 @@ export default function Dashboard() {
   const { data: user, isLoading: userLoading } = useUser();
   const [selectedClient, setSelectedClient] = useState<number | null>(null);
   const { toast } = useToast();
+  const logout = useLogout();
 
   // Clear authentication in progress when dashboard loads successfully
   useEffect(() => {
@@ -48,9 +49,13 @@ export default function Dashboard() {
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold">Welcome, {user.name}</h1>
-          <Button variant="ghost" onClick={() => window.location.href = "/api/auth/logout"}>
+          <Button 
+            variant="ghost" 
+            onClick={() => logout.mutate()}
+            disabled={logout.isPending}
+          >
             <LogOut className="mr-2 h-4 w-4" />
-            Logout
+            {logout.isPending ? "Logging out..." : "Logout"}
           </Button>
         </div>
 

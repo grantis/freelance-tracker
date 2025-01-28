@@ -120,6 +120,12 @@ export function registerRoutes(app: Express): Server {
 
   app.post('/api/auth/logout', (req, res) => {
     req.logout(() => {
+      res.json({ success: true });
+    });
+  });
+
+  app.get('/api/auth/logout', (req, res) => {
+    req.logout(() => {
       res.redirect('/');
     });
   });
