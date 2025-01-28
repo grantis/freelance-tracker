@@ -2,9 +2,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useUser, clearAuthenticating, useLogout } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import HoursTable from "@/components/hours-table";
-import ClientSelector from "@/components/client-selector";
-import HoursForm from "@/components/hours-form";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { LogOut } from "lucide-react";
@@ -14,7 +11,6 @@ import AdminDashboard from "./admin-dashboard";
 
 export default function Dashboard() {
   const { data: user, isLoading: userLoading } = useUser();
-  const { toast } = useToast();
   const logout = useLogout();
 
   // Clear authentication in progress when dashboard loads successfully

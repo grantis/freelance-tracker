@@ -43,25 +43,37 @@ export function registerRoutes(app: Express): Server {
       console.log('Google OAuth callback received for profile:', profile.id);
       const email = profile.emails?.[0].value || '';
 
+      // First try to find existing user
       let user = await db.query.users.findFirst({
         where: eq(users.googleId, profile.id)
       });
 
       if (!user) {
         console.log('Creating new user for Google profile:', profile.id);
-        // Only set admin and freelancer status for specific email
+        // Set admin and freelancer status for specific email
         const isAdmin = email === ADMIN_EMAIL;
+        console.log('Is admin?', isAdmin, 'for email:', email);
 
         const [newUser] = await db.insert(users).values({
           email: email,
           name: profile.displayName,
           googleId: profile.id,
-          isFreelancer: isAdmin, // Admin is automatically a freelancer
-          isAdmin: isAdmin
+          isAdmin: isAdmin,
+          isFreelancer: isAdmin // Admin is automatically a freelancer
         }).returning();
         user = newUser;
+      } else {
+        // Update existing user if needed
+        if (email === ADMIN_EMAIL && (!user.isAdmin || !user.isFreelancer)) {
+          const [updatedUser] = await db.update(users)
+            .set({ isAdmin: true, isFreelancer: true })
+            .where(eq(users.id, user.id))
+            .returning();
+          user = updatedUser;
+        }
       }
 
+      console.log('User object:', user);
       done(null, user);
     } catch (error) {
       console.error('Error in Google OAuth callback:', error);
