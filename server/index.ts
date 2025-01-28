@@ -9,14 +9,22 @@ app.use(express.urlencoded({ extended: false }));
 // Trust proxy settings for secure cookies and proper protocol detection
 app.enable('trust proxy');
 
+// Force redirect to preferred domain in production
+const PREFERRED_DOMAIN = 'freelance.grantrigby.dev';
 app.use((req, res, next) => {
+  const host = req.get('host');
+
+  // In production, redirect all traffic to the preferred domain
+  if (process.env.NODE_ENV === 'production' && host && host !== PREFERRED_DOMAIN) {
+    return res.redirect(301, `https://${PREFERRED_DOMAIN}${req.url}`);
+  }
+
   const start = Date.now();
   const path = req.path;
   let capturedJsonResponse: Record<string, any> | undefined = undefined;
 
   // Force HTTPS redirect if not secure and in production
   if (process.env.NODE_ENV === 'production' && !req.secure) {
-    const host = req.get('host') || '';
     return res.redirect(`https://${host}${req.url}`);
   }
 
