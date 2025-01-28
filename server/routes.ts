@@ -72,7 +72,7 @@ export function registerRoutes(app: Express): Server {
         }
       }
 
-      console.log('User object:', user);
+      console.log('User authenticated successfully:', user.id);
       done(null, user);
     } catch (error) {
       console.error('Error in Google OAuth callback:', error);
@@ -81,6 +81,7 @@ export function registerRoutes(app: Express): Server {
   }));
 
   passport.serializeUser((user: any, done) => {
+    console.log('Serializing user:', user.id);
     done(null, user.id);
   });
 
@@ -96,10 +97,12 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Auth routes with better error handling
   app.get('/api/auth/google',
     (req, res, next) => {
       console.log('Starting Google OAuth flow');
+      console.log('Current host:', req.get('host'));
+      console.log('Protocol:', req.protocol);
+      console.log('Using callback URL:', CALLBACK_URL);
       passport.authenticate('google', {
         scope: ['profile', 'email'],
         prompt: 'select_account'
@@ -109,6 +112,9 @@ export function registerRoutes(app: Express): Server {
 
   app.get('/api/auth/google/callback',
     (req, res, next) => {
+      console.log('Received callback request');
+      console.log('Query params:', req.query);
+
       passport.authenticate('google', (err: any, user: any, info: any) => {
         if (err) {
           console.error('Google OAuth callback error:', err);
@@ -125,6 +131,7 @@ export function registerRoutes(app: Express): Server {
             console.error('Login error:', loginErr);
             return res.redirect('/login?error=login_failed');
           }
+          console.log('User logged in successfully:', user.id);
           return res.redirect('/dashboard');
         });
       })(req, res, next);
