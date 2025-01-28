@@ -7,37 +7,47 @@ import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import session from "express-session";
 import MemoryStore from "memorystore";
+import crypto from "crypto";
 
 const SessionStore = MemoryStore(session);
+const sessionSecret = crypto.randomBytes(32).toString('hex');
 
 export function registerRoutes(app: Express): Server {
-  // Session setup
+  // Session setup with secure settings
   app.use(session({
-    secret: 'freelance-tracker-secret',
+    secret: sessionSecret,
     resave: false,
     saveUninitialized: false,
     store: new SessionStore({
-      checkPeriod: 86400000
-    })
+      checkPeriod: 86400000 // 24 hours
+    }),
+    cookie: {
+      secure: process.env.NODE_ENV === 'production',
+      httpOnly: true,
+      sameSite: 'lax'
+    }
   }));
 
   app.use(passport.initialize());
   app.use(passport.session());
 
-  // Google OAuth setup
+  // Google OAuth setup with error logging
   passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID!,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     callbackURL: process.env.GOOGLE_CALLBACK_URL!
   }, async (accessToken, refreshToken, profile, done) => {
     try {
+      console.log('Google OAuth callback received for profile:', profile.id);
+
       let user = await db.query.users.findFirst({
         where: eq(users.googleId, profile.id)
       });
 
       if (!user) {
+        console.log('Creating new user for Google profile:', profile.id);
         const [newUser] = await db.insert(users).values({
-          email: profile.emails![0].value,
+          email: profile.emails?.[0].value || '',
           name: profile.displayName,
           googleId: profile.id,
           isFreelancer: false
@@ -47,6 +57,7 @@ export function registerRoutes(app: Express): Server {
 
       done(null, user);
     } catch (error) {
+      console.error('Error in Google OAuth callback:', error);
       done(error as Error);
     }
   }));
@@ -62,19 +73,44 @@ export function registerRoutes(app: Express): Server {
       });
       done(null, user);
     } catch (error) {
+      console.error('Error deserializing user:', error);
       done(error);
     }
   });
 
-  // Auth routes
+  // Auth routes with better error handling
   app.get('/api/auth/google',
-    passport.authenticate('google', { scope: ['profile', 'email'] })
+    (req, res, next) => {
+      console.log('Starting Google OAuth flow');
+      next();
+    },
+    passport.authenticate('google', { 
+      scope: ['profile', 'email'],
+      prompt: 'select_account'
+    })
   );
 
   app.get('/api/auth/google/callback',
-    passport.authenticate('google', { failureRedirect: '/login' }),
-    (req, res) => {
-      res.redirect('/dashboard');
+    (req, res, next) => {
+      passport.authenticate('google', (err: any, user: any, info: any) => {
+        if (err) {
+          console.error('Google OAuth callback error:', err);
+          return res.redirect('/login?error=auth_failed');
+        }
+
+        if (!user) {
+          console.error('No user returned from Google OAuth');
+          return res.redirect('/login?error=no_user');
+        }
+
+        req.logIn(user, (loginErr) => {
+          if (loginErr) {
+            console.error('Login error:', loginErr);
+            return res.redirect('/login?error=login_failed');
+          }
+          return res.redirect('/dashboard');
+        });
+      })(req, res, next);
     }
   );
 
