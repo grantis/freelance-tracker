@@ -9,10 +9,11 @@ import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { LogOut } from "lucide-react";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import ClientDashboard from "./client-dashboard";
+import AdminDashboard from "./admin-dashboard";
 
 export default function Dashboard() {
   const { data: user, isLoading: userLoading } = useUser();
-  const [selectedClient, setSelectedClient] = useState<number | null>(null);
   const { toast } = useToast();
   const logout = useLogout();
 
@@ -22,11 +23,6 @@ export default function Dashboard() {
       clearAuthenticating();
     }
   }, [user]);
-
-  const { data: clients } = useQuery({
-    queryKey: ["/api/clients"],
-    enabled: !!user,
-  });
 
   if (userLoading) {
     return (
@@ -45,10 +41,10 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold">Welcome, {user.name}</h1>
+    <div className="min-h-screen bg-background">
+      <div className="p-4 border-b">
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
+          <h1 className="text-2xl font-bold">Welcome, {user.name}</h1>
           <Button 
             variant="ghost" 
             onClick={() => logout.mutate()}
@@ -58,52 +54,14 @@ export default function Dashboard() {
             {logout.isPending ? "Logging out..." : "Logout"}
           </Button>
         </div>
+      </div>
 
-        <div className="grid gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>{user.isFreelancer ? "Clients" : "Your Freelancer's Hours"}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ClientSelector
-                clients={clients || []}
-                selectedClient={selectedClient}
-                onSelectClient={setSelectedClient}
-                isFreelancer={user.isAdmin}
-              />
-            </CardContent>
-          </Card>
-
-          {selectedClient && (
-            <>
-              {user.isAdmin && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Log Hours</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <HoursForm
-                      clientId={selectedClient}
-                      onSuccess={() => {
-                        toast({
-                          title: "Hours logged successfully",
-                          description: "The hours have been recorded",
-                        });
-                      }}
-                    />
-                  </CardContent>
-                </Card>
-              )}
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Hours Log</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <HoursTable clientId={selectedClient} />
-                </CardContent>
-              </Card>
-            </>
+      <div className="p-4 md:p-8">
+        <div className="max-w-7xl mx-auto">
+          {user.isAdmin ? (
+            <AdminDashboard user={user} />
+          ) : (
+            <ClientDashboard user={user} />
           )}
         </div>
       </div>

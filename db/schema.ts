@@ -5,10 +5,13 @@ import {
   timestamp, 
   integer,
   boolean,
-  decimal
+  decimal,
+  pgEnum
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
+
+export const clientStatusEnum = pgEnum("client_status", ["pending", "approved", "rejected"]);
 
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
@@ -26,6 +29,8 @@ export const clients = pgTable("clients", {
   freelancerId: integer("freelancer_id").notNull().references(() => users.id),
   userId: integer("user_id").references(() => users.id),
   email: text("email"),
+  status: clientStatusEnum("status").default("pending").notNull(),
+  applicationNotes: text("application_notes"),
   createdAt: timestamp("created_at").defaultNow().notNull()
 });
 

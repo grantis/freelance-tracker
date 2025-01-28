@@ -130,12 +130,6 @@ export function registerRoutes(app: Express): Server {
     });
   });
 
-  app.get('/api/auth/logout', (req, res) => {
-    req.logout(() => {
-      res.redirect('/');
-    });
-  });
-
   // Protected route middleware
   const requireAuth = (req: any, res: any, next: any) => {
     if (!req.user) {
@@ -145,18 +139,100 @@ export function registerRoutes(app: Express): Server {
     next();
   };
 
-  // API routes
+  // Client application
+  app.post('/api/clients/apply', requireAuth, async (req: any, res) => {
+    const user = req.user;
+
+    try {
+      // Check if user already has an application
+      const existingApplication = await db.query.clients.findFirst({
+        where: eq(clients.userId, user.id)
+      });
+
+      if (existingApplication) {
+        return res.status(400).json({ message: 'Application already exists' });
+      }
+
+      const [application] = await db.insert(clients).values({
+        name: user.name,
+        email: user.email,
+        userId: user.id,
+        freelancerId: 1, // Admin's user ID
+        status: 'pending',
+        applicationNotes: req.body.notes
+      }).returning();
+
+      res.json(application);
+    } catch (error) {
+      res.status(500).json({ message: 'Server error' });
+    }
+  });
+
+  // Get current client's info
+  app.get('/api/clients/me', requireAuth, async (req: any, res) => {
+    try {
+      const client = await db.query.clients.findFirst({
+        where: eq(clients.userId, req.user.id)
+      });
+
+      res.json(client || null);
+    } catch (error) {
+      res.status(500).json({ message: 'Server error' });
+    }
+  });
+
+  // Get pending applications (admin only)
+  app.get('/api/clients/pending', requireAuth, async (req: any, res) => {
+    if (!req.user.isAdmin) {
+      return res.status(403).json({ message: 'Unauthorized' });
+    }
+
+    try {
+      const pendingClients = await db.query.clients.findMany({
+        where: eq(clients.status, 'pending')
+      });
+      res.json(pendingClients);
+    } catch (error) {
+      res.status(500).json({ message: 'Server error' });
+    }
+  });
+
+  // Update client application status (admin only)
+  app.post('/api/clients/:id/status', requireAuth, async (req: any, res) => {
+    if (!req.user.isAdmin) {
+      return res.status(403).json({ message: 'Unauthorized' });
+    }
+
+    try {
+      const [updatedClient] = await db
+        .update(clients)
+        .set({ status: req.body.status })
+        .where(eq(clients.id, parseInt(req.params.id)))
+        .returning();
+
+      res.json(updatedClient);
+    } catch (error) {
+      res.status(500).json({ message: 'Server error' });
+    }
+  });
+
+  // Get all clients (filtered by user role)
   app.get('/api/clients', requireAuth, async (req: any, res) => {
     const user = req.user;
     try {
       if (user.isAdmin) {
-        // Admin sees all clients
-        const clientsList = await db.query.clients.findMany();
+        // Admin sees all approved clients
+        const clientsList = await db.query.clients.findMany({
+          where: eq(clients.status, 'approved')
+        });
         res.json(clientsList);
       } else {
-        // Regular users only see their own client record
+        // Regular users only see their own client record if approved
         const clientsList = await db.query.clients.findMany({
-          where: eq(clients.userId, user.id)
+          where: and(
+            eq(clients.userId, user.id),
+            eq(clients.status, 'approved')
+          )
         });
         res.json(clientsList);
       }
@@ -165,27 +241,7 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Only admin can create clients
-  app.post('/api/clients', requireAuth, async (req: any, res) => {
-    const user = req.user;
-    if (!user.isAdmin) {
-      res.status(403).json({ message: 'Only admin can create clients' });
-      return;
-    }
-
-    try {
-      const [client] = await db.insert(clients).values({
-        name: req.body.name,
-        email: req.body.email,
-        freelancerId: user.id,
-        userId: req.body.userId // Link to the client's user account
-      }).returning();
-      res.json(client);
-    } catch (error) {
-      res.status(500).json({ message: 'Server error' });
-    }
-  });
-
+  // Hours endpoints
   app.get('/api/hours/:clientId', requireAuth, async (req: any, res) => {
     const user = req.user;
     const clientId = parseInt(req.params.clientId);
