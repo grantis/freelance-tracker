@@ -6,10 +6,22 @@ import {
   CardDescription,
   CardContent,
 } from "@/components/ui/card";
-import { loginWithGoogle } from "@/lib/auth";
+import { loginWithGoogle, isAuthenticating, clearAuthenticating } from "@/lib/auth";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { SiGoogle } from "react-icons/si";
+import { useEffect } from "react";
 
 export default function Login() {
+  // Clear auth progress when component mounts (in case of redirect back with error)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('error')) {
+      clearAuthenticating();
+    }
+  }, []);
+
+  const authenticating = isAuthenticating();
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
@@ -20,10 +32,19 @@ export default function Login() {
           <CardDescription>Track my freelance hours with ease</CardDescription>
         </CardHeader>
         <CardContent>
-          <Button className="w-full" onClick={loginWithGoogle}>
-            <SiGoogle className="mr-2 h-4 w-4" />
-            Sign in with Google
-          </Button>
+          {authenticating ? (
+            <div className="flex flex-col items-center gap-4 py-4">
+              <LoadingSpinner size="lg" />
+              <p className="text-sm text-muted-foreground">
+                Authenticating with Google...
+              </p>
+            </div>
+          ) : (
+            <Button className="w-full" onClick={loginWithGoogle}>
+              <SiGoogle className="mr-2 h-4 w-4" />
+              Sign in with Google
+            </Button>
+          )}
         </CardContent>
       </Card>
     </div>

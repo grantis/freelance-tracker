@@ -1,18 +1,26 @@
 import { useQuery } from "@tanstack/react-query";
-import { useUser } from "@/lib/auth";
+import { useUser, clearAuthenticating } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import HoursTable from "@/components/hours-table";
 import ClientSelector from "@/components/client-selector";
 import HoursForm from "@/components/hours-form";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { LogOut } from "lucide-react";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 export default function Dashboard() {
   const { data: user, isLoading: userLoading } = useUser();
   const [selectedClient, setSelectedClient] = useState<number | null>(null);
   const { toast } = useToast();
+
+  // Clear authentication in progress when dashboard loads successfully
+  useEffect(() => {
+    if (user) {
+      clearAuthenticating();
+    }
+  }, [user]);
 
   const { data: clients } = useQuery({
     queryKey: ["/api/clients"],
@@ -20,7 +28,14 @@ export default function Dashboard() {
   });
 
   if (userLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <LoadingSpinner size="lg" />
+          <p className="text-sm text-muted-foreground">Loading your profile...</p>
+        </div>
+      </div>
+    );
   }
 
   if (!user) {

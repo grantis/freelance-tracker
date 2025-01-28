@@ -24,5 +24,17 @@ export function useLogout() {
 }
 
 export function loginWithGoogle() {
+  // Store a flag in sessionStorage to indicate authentication is in progress
+  sessionStorage.setItem("auth_in_progress", "true");
   window.location.href = "/api/auth/google";
+}
+
+// Check if authentication is in progress
+export function isAuthenticating() {
+  return sessionStorage.getItem("auth_in_progress") === "true";
+}
+
+// Clear authentication progress
+export function clearAuthenticating() {
+  sessionStorage.removeItem("auth_in_progress");
 }
