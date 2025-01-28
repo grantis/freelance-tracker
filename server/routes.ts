@@ -27,7 +27,9 @@ export function registerRoutes(app: Express): Server {
       secure: true, // Require HTTPS
       httpOnly: true,
       sameSite: 'lax',
-      domain: process.env.NODE_ENV === 'production' ? 'freelance.grantrigby.dev' : undefined
+      domain: process.env.NODE_ENV === 'production' ? 
+        process.env.CUSTOM_DOMAIN || 'freelance-tracker-replit.app' : 
+        undefined
     }
   }));
 
