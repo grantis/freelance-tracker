@@ -28,8 +28,8 @@ export const clients = pgTable("clients", {
   name: text("name").notNull(),
   freelancerId: integer("freelancer_id").notNull().references(() => users.id),
   userId: integer("user_id").references(() => users.id),
-  email: text("email"),
-  status: clientStatusEnum("status").default("pending").notNull(),
+  email: text("email").notNull(),
+  status: clientStatusEnum("status").default("approved").notNull(),
   applicationNotes: text("application_notes"),
   createdAt: timestamp("created_at").defaultNow().notNull()
 });

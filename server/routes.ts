@@ -198,6 +198,26 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Create new client (admin only)
+  app.post('/api/clients', requireAuth, async (req: any, res) => {
+    if (!req.user.isAdmin) {
+      return res.status(403).json({ message: 'Unauthorized' });
+    }
+
+    try {
+      const [client] = await db.insert(clients).values({
+        name: req.body.name,
+        email: req.body.email,
+        freelancerId: req.user.id,
+        status: 'approved'
+      }).returning();
+
+      res.json(client);
+    } catch (error) {
+      res.status(500).json({ message: 'Server error' });
+    }
+  });
+
   // Update client application status (admin only)
   app.post('/api/clients/:id/status', requireAuth, async (req: any, res) => {
     if (!req.user.isAdmin) {

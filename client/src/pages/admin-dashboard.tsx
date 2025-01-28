@@ -1,24 +1,43 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
+import { Form, FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import HoursTable from "@/components/hours-table";
 import ClientSelector from "@/components/client-selector";
 import HoursForm from "@/components/hours-form";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import type { User, Client } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
-import { Check, X } from "lucide-react";
+import { Check, X, Plus } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 interface AdminDashboardProps {
   user: User;
 }
 
+const newClientSchema = z.object({
+  name: z.string().min(1, "Client name is required"),
+  email: z.string().email("Valid email is required"),
+});
+
 export default function AdminDashboard({ user }: AdminDashboardProps) {
   const [selectedClient, setSelectedClient] = useState<number | null>(null);
   const { toast } = useToast();
+  const [isNewClientDialogOpen, setIsNewClientDialogOpen] = useState(false);
 
-  const { data: clients } = useQuery<Client[]>({
+  const { data: clients, refetch: refetchClients } = useQuery<Client[]>({
     queryKey: ["/api/clients"],
     enabled: !!user,
   });
@@ -26,6 +45,41 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
   const { data: pendingApplications } = useQuery<Client[]>({
     queryKey: ["/api/clients/pending"],
     enabled: !!user,
+  });
+
+  const form = useForm({
+    resolver: zodResolver(newClientSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+    },
+  });
+
+  const createClientMutation = useMutation({
+    mutationFn: async (values: z.infer<typeof newClientSchema>) => {
+      const res = await fetch("/api/clients", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(values),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to create client");
+      }
+
+      return res.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Client Created",
+        description: "New client has been created successfully.",
+      });
+      form.reset();
+      setIsNewClientDialogOpen(false);
+      refetchClients();
+    },
   });
 
   const handleApplicationResponse = async (clientId: number, approve: boolean) => {
@@ -49,6 +103,8 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
         description: `Successfully ${approve ? 'approved' : 'rejected'} the client application.`,
       });
 
+      refetchClients();
+
     } catch (error) {
       toast({
         variant: "destructive",
@@ -60,6 +116,49 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
 
   return (
     <div className="space-y-6">
+      {/* New Client Dialog */}
+      <Dialog open={isNewClientDialogOpen} onOpenChange={setIsNewClientDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create New Client</DialogTitle>
+            <DialogDescription>
+              Add a new client to start tracking hours. They can register later with this email.
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit((data) => createClientMutation.mutate(data))} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Client Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter client name" {...field} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Client Email</FormLabel>
+                    <FormControl>
+                      <Input type="email" placeholder="client@example.com" {...field} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <Button type="submit" disabled={createClientMutation.isPending}>
+                {createClientMutation.isPending ? "Creating..." : "Create Client"}
+              </Button>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
       {pendingApplications?.length > 0 && (
         <Card>
           <CardHeader>
@@ -102,8 +201,15 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
       )}
 
       <Card>
-        <CardHeader>
-          <CardTitle>Client Management</CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Client Management</CardTitle>
+            <CardDescription>Select a client or create a new one</CardDescription>
+          </div>
+          <Button onClick={() => setIsNewClientDialogOpen(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            New Client
+          </Button>
         </CardHeader>
         <CardContent>
           <ClientSelector
