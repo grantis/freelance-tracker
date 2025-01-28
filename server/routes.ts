@@ -24,9 +24,10 @@ export function registerRoutes(app: Express): Server {
       checkPeriod: 86400000 // 24 hours
     }),
     cookie: {
-      secure: process.env.NODE_ENV === 'production',
+      secure: true, // Require HTTPS
       httpOnly: true,
-      sameSite: 'lax'
+      sameSite: 'lax',
+      domain: process.env.NODE_ENV === 'production' ? '.grantrigby.dev' : undefined
     }
   }));
 
