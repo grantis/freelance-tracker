@@ -14,10 +14,10 @@ const sessionSecret = crypto.randomBytes(32).toString('hex');
 
 const ADMIN_EMAIL = "grantrigby1992@gmail.com";
 const DOMAIN = process.env.REPL_SLUG 
-  ? `${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.replit.dev`
+  ? `${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.replit.dev:5000`
   : process.env.NODE_ENV === 'production' 
     ? 'freelance.grantrigby.dev'
-    : 'localhost:3000';
+    : 'localhost:5000';
 
 const CALLBACK_URL = `${process.env.NODE_ENV === 'production' || process.env.REPL_SLUG ? 'https' : 'http'}://${DOMAIN}/api/auth/google/callback`;
 
@@ -33,7 +33,9 @@ export function registerRoutes(app: Express): Server {
       secure: process.env.NODE_ENV === 'production' || !!process.env.REPL_SLUG,
       httpOnly: true,
       sameSite: 'lax',
-      domain: process.env.NODE_ENV === 'production' ? '.freelance.grantrigby.dev' : undefined
+      domain: process.env.NODE_ENV === 'production' 
+        ? '.freelance.grantrigby.dev' 
+        : undefined
     }
   }));
 
