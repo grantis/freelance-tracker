@@ -4,7 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/dashboard";
-import Login from "@/pages/login";
+import AuthPage from "@/pages/auth-page";
 import { useUser } from "@/lib/auth";
 import { Loader2 } from "lucide-react";
 
@@ -20,7 +20,7 @@ function Router() {
   }
 
   if (!user) {
-    return <Login />;
+    return <AuthPage />;
   }
 
   return (
