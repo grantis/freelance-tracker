@@ -1,11 +1,26 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "./queryClient";
-import type { User } from "./types";
+
+export interface User {
+  id: number;
+  name: string;
+  email: string;
+  googleId: string | null;
+  isAdmin: boolean;
+  isFreelancer: boolean;
+}
 
 export function useUser() {
-  return useQuery<User>({
+  const query = useQuery<User | null>({
     queryKey: ["/api/auth/user"],
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
+    staleTime: Infinity,
+    retry: false,
+    initialData: null
   });
+
+  return query;
 }
 
 export function useLogout() {
@@ -25,17 +40,5 @@ export function useLogout() {
 }
 
 export function loginWithGoogle() {
-  // Store a flag in sessionStorage to indicate authentication is in progress
-  sessionStorage.setItem("auth_in_progress", "true");
   window.location.href = "/api/auth/google";
-}
-
-// Check if authentication is in progress
-export function isAuthenticating() {
-  return sessionStorage.getItem("auth_in_progress") === "true";
-}
-
-// Clear authentication progress
-export function clearAuthenticating() {
-  sessionStorage.removeItem("auth_in_progress");
 }

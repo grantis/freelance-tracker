@@ -13,6 +13,10 @@ export const queryClient = new QueryClient({
             throw new Error(`${res.status}: ${res.statusText}`);
           }
 
+          if (res.status === 401) {
+            return null;
+          }
+
           throw new Error(`${res.status}: ${await res.text()}`);
         }
 

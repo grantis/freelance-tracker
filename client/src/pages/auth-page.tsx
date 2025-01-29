@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { FcGoogle } from "react-icons/fc";
 import { Link } from "wouter";
+import { loginWithGoogle } from "@/lib/auth";
 
 export default function AuthPage() {
   return (
@@ -81,7 +82,7 @@ export default function AuthPage() {
             <Button 
               variant="outline" 
               className="w-full"
-              onClick={() => window.location.href = '/api/auth/google'}
+              onClick={loginWithGoogle}
             >
               <FcGoogle className="mr-2 h-5 w-5" />
               Google

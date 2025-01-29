@@ -8,8 +8,8 @@ import AuthPage from "@/pages/auth-page";
 import { useUser } from "@/lib/auth";
 import { Loader2 } from "lucide-react";
 
-function Router() {
-  const { user, isLoading } = useUser();
+function AuthenticatedRouter() {
+  const { data: user, isLoading } = useUser();
 
   if (isLoading) {
     return (
@@ -34,7 +34,7 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Router />
+      <AuthenticatedRouter />
       <Toaster />
     </QueryClientProvider>
   );
