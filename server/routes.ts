@@ -14,7 +14,7 @@ const sessionSecret = crypto.randomBytes(32).toString('hex');
 
 const ADMIN_EMAIL = "grantrigby1992@gmail.com";
 const DOMAIN = process.env.REPL_SLUG 
-  ? `${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.replit.dev:5000`
+  ? `${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.replit.dev`
   : process.env.NODE_ENV === 'production' 
     ? 'freelance.grantrigby.dev'
     : 'localhost:5000';
