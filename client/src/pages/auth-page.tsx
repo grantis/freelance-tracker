@@ -1,53 +1,94 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
-import { SiApple } from "react-icons/si";
-import { MdOutlineEmail } from "react-icons/md";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { FcGoogle } from "react-icons/fc";
 import { Link } from "wouter";
 
 export default function AuthPage() {
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-sm mx-auto">
-        <CardContent className="pt-6">
-          {/* Back button */}
-          <button className="mb-8">
-            <ArrowLeft className="h-6 w-6 text-muted-foreground hover:text-foreground transition-colors" />
-          </button>
-
-          {/* Header */}
-          <div className="mb-12">
-            <h1 className="text-4xl font-semibold tracking-tight mb-3">Register</h1>
-            <p className="text-sm text-muted-foreground">
-              Got an account?{" "}
-              <Link href="/login" className="text-primary hover:underline">
-                Log in here →
-              </Link>
-            </p>
+    <div className="min-h-screen w-full flex bg-background">
+      {/* Left side - Image */}
+      <div className="hidden lg:block w-1/2 bg-muted">
+        <div className="h-full w-full bg-cover bg-center" style={{ backgroundImage: 'url("/path/to/your/image.jpg")' }}>
+          <div className="h-full w-full bg-black/50 p-12 flex flex-col justify-between">
+            <h2 className="text-2xl font-bold text-white">Freelance Hours Tracker</h2>
+            <div>
+              <h3 className="text-3xl font-bold text-white mb-4">Capturing Moments,<br/>Creating Memories</h3>
+              <p className="text-white/80">Track your freelance hours efficiently and manage client relationships seamlessly.</p>
+            </div>
           </div>
+        </div>
+      </div>
 
-          {/* Auth options */}
-          <div className="space-y-4">
+      {/* Right side - Form */}
+      <div className="flex-1 flex items-center justify-center p-8">
+        <Card className="w-full max-w-md">
+          <CardContent className="pt-6 space-y-6">
+            {/* Form Header */}
+            <div>
+              <h1 className="text-2xl font-semibold mb-2">Create an account</h1>
+              <p className="text-sm text-muted-foreground">
+                Already have an account?{" "}
+                <Link href="/login" className="text-primary hover:underline">
+                  Log in
+                </Link>
+              </p>
+            </div>
+
+            {/* Registration Form */}
+            <form className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="firstName">First name</Label>
+                  <Input id="firstName" placeholder="Fletcher" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lastName">Last name</Label>
+                  <Input id="lastName" placeholder="Thompson" />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" type="email" placeholder="fletcher@example.com" />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <Input id="password" type="password" />
+              </div>
+
+              <Button className="w-full" type="submit">
+                Create account
+              </Button>
+            </form>
+
+            {/* Divider */}
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <Separator />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">
+                  Or register with
+                </span>
+              </div>
+            </div>
+
+            {/* Social Login */}
             <Button 
               variant="outline" 
-              className="w-full h-[72px] text-base justify-start px-6" 
-              onClick={() => {}}
+              className="w-full"
+              onClick={() => window.location.href = '/api/auth/google'}
             >
-              <SiApple className="mr-3 h-6 w-6" />
-              <span className="flex-1 text-left">with Apple</span>
+              <FcGoogle className="mr-2 h-5 w-5" />
+              Google
             </Button>
-
-            <Button 
-              variant="outline" 
-              className="w-full h-[72px] text-base justify-start px-6" 
-              onClick={() => {}}
-            >
-              <MdOutlineEmail className="mr-3 h-6 w-6" />
-              <span className="flex-1 text-left">with Email</span>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
