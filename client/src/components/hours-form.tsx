@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
+import type { Hours } from "@/lib/types";
 
 const hoursSchema = z.object({
   hours: z.string().min(1).transform(Number),
@@ -16,23 +17,30 @@ const hoursSchema = z.object({
 
 interface HoursFormProps {
   clientId: number;
+  initialData?: Hours;
   onSuccess?: () => void;
 }
 
-export default function HoursForm({ clientId, onSuccess }: HoursFormProps) {
+export default function HoursForm({ clientId, initialData, onSuccess }: HoursFormProps) {
   const form = useForm({
     resolver: zodResolver(hoursSchema),
     defaultValues: {
-      hours: "",
-      description: "",
-      date: new Date().toISOString().split('T')[0],
+      hours: initialData ? String(initialData.hours) : "",
+      description: initialData?.description ?? "",
+      date: initialData 
+        ? new Date(initialData.date).toISOString().split('T')[0]
+        : new Date().toISOString().split('T')[0],
     },
   });
 
   const mutation = useMutation({
     mutationFn: async (values: z.infer<typeof hoursSchema>) => {
-      const res = await fetch("/api/hours", {
-        method: "POST",
+      const url = initialData 
+        ? `/api/hours/${initialData.id}`
+        : "/api/hours";
+
+      const res = await fetch(url, {
+        method: initialData ? "PUT" : "POST",
         headers: {
           "Content-Type": "application/json",
         },
@@ -43,7 +51,7 @@ export default function HoursForm({ clientId, onSuccess }: HoursFormProps) {
       });
 
       if (!res.ok) {
-        throw new Error("Failed to log hours");
+        throw new Error(initialData ? "Failed to update hours" : "Failed to log hours");
       }
 
       return res.json();
@@ -101,7 +109,9 @@ export default function HoursForm({ clientId, onSuccess }: HoursFormProps) {
         />
 
         <Button type="submit" disabled={mutation.isPending}>
-          {mutation.isPending ? "Logging..." : "Log Hours"}
+          {mutation.isPending 
+            ? (initialData ? "Updating..." : "Logging...") 
+            : (initialData ? "Update Hours" : "Log Hours")}
         </Button>
       </form>
     </Form>

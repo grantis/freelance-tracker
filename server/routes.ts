@@ -17,7 +17,6 @@ const DOMAIN = 'freelance.grantrigby.dev';
 const CALLBACK_URL = `https://${DOMAIN}/api/auth/google/callback`;
 
 export function registerRoutes(app: Express): Server {
-  // Session setup with secure settings
   app.use(session({
     secret: sessionSecret,
     resave: false,
@@ -36,7 +35,6 @@ export function registerRoutes(app: Express): Server {
   app.use(passport.initialize());
   app.use(passport.session());
 
-  // Google OAuth setup with fixed callback URL
   passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID!,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
@@ -52,25 +50,28 @@ export function registerRoutes(app: Express): Server {
       });
 
       if (!user) {
-        console.log('Creating new user for Google profile:', profile.id);
-        const isAdmin = email === ADMIN_EMAIL;
-        console.log('Is admin?', isAdmin, 'for email:', email);
+        user = await db.query.users.findFirst({
+          where: eq(users.email, email)
+        });
 
-        const [newUser] = await db.insert(users).values({
-          email: email,
-          name: profile.displayName,
-          googleId: profile.id,
-          isAdmin: isAdmin,
-          isFreelancer: isAdmin
-        }).returning();
-        user = newUser;
-      } else {
-        if (email === ADMIN_EMAIL && (!user.isAdmin || !user.isFreelancer)) {
+        if (user) {
           const [updatedUser] = await db.update(users)
-            .set({ isAdmin: true, isFreelancer: true })
+            .set({ googleId: profile.id })
             .where(eq(users.id, user.id))
             .returning();
           user = updatedUser;
+        } else {
+          const isAdmin = email === ADMIN_EMAIL;
+          console.log('Is admin?', isAdmin, 'for email:', email);
+
+          const [newUser] = await db.insert(users).values({
+            email: email,
+            name: profile.displayName,
+            googleId: profile.id,
+            isAdmin: isAdmin,
+            isFreelancer: isAdmin
+          }).returning();
+          user = newUser;
         }
       }
 
@@ -106,7 +107,6 @@ export function registerRoutes(app: Express): Server {
       console.log('Protocol:', req.protocol);
       console.log('Using callback URL:', CALLBACK_URL);
 
-      // Only allow OAuth from the main domain in production
       if (process.env.NODE_ENV === 'production' && req.get('host') !== DOMAIN) {
         console.log('Invalid host detected:', req.get('host'));
         return res.redirect(`https://${DOMAIN}/login`);
@@ -157,7 +157,6 @@ export function registerRoutes(app: Express): Server {
     });
   });
 
-  // Protected route middleware
   const requireAuth = (req: any, res: any, next: any) => {
     if (!req.user) {
       res.status(401).json({ message: 'Unauthorized' });
@@ -166,12 +165,10 @@ export function registerRoutes(app: Express): Server {
     next();
   };
 
-  // Client application
   app.post('/api/clients/apply', requireAuth, async (req: any, res) => {
     const user = req.user;
 
     try {
-      // Check if user already has an application
       const existingApplication = await db.query.clients.findFirst({
         where: eq(clients.userId, user.id)
       });
@@ -184,7 +181,7 @@ export function registerRoutes(app: Express): Server {
         name: user.name,
         email: user.email,
         userId: user.id,
-        freelancerId: 1, // Admin's user ID
+        freelancerId: 1, 
         status: 'pending',
         applicationNotes: req.body.notes
       }).returning();
@@ -195,7 +192,6 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Get current client's info
   app.get('/api/clients/me', requireAuth, async (req: any, res) => {
     try {
       const client = await db.query.clients.findFirst({
@@ -208,7 +204,6 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Get pending applications (admin only)
   app.get('/api/clients/pending', requireAuth, async (req: any, res) => {
     if (!req.user.isAdmin) {
       return res.status(403).json({ message: 'Unauthorized' });
@@ -224,7 +219,6 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Create new client (admin only)
   app.post('/api/clients', requireAuth, async (req: any, res) => {
     if (!req.user.isAdmin) {
       return res.status(403).json({ message: 'Unauthorized' });
@@ -244,7 +238,6 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Update client application status (admin only)
   app.post('/api/clients/:id/status', requireAuth, async (req: any, res) => {
     if (!req.user.isAdmin) {
       return res.status(403).json({ message: 'Unauthorized' });
@@ -263,18 +256,15 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Get all clients (filtered by user role)
   app.get('/api/clients', requireAuth, async (req: any, res) => {
     const user = req.user;
     try {
       if (user.isAdmin) {
-        // Admin sees all approved clients
         const clientsList = await db.query.clients.findMany({
           where: eq(clients.status, 'approved')
         });
         res.json(clientsList);
       } else {
-        // Regular users only see their own client record if approved
         const clientsList = await db.query.clients.findMany({
           where: and(
             eq(clients.userId, user.id),
@@ -288,7 +278,6 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Hours endpoints
   app.get('/api/hours/:clientId', requireAuth, async (req: any, res) => {
     const user = req.user;
     const clientId = parseInt(req.params.clientId);
@@ -303,7 +292,6 @@ export function registerRoutes(app: Express): Server {
         return;
       }
 
-      // Admin can see all hours, regular users can only see their own
       if (!user.isAdmin && client.userId !== user.id) {
         res.status(403).json({ message: 'Unauthorized' });
         return;
@@ -318,7 +306,6 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Only admin can log hours
   app.post('/api/hours', requireAuth, async (req: any, res) => {
     const user = req.user;
     if (!user.isAdmin) {
@@ -334,6 +321,74 @@ export function registerRoutes(app: Express): Server {
         date: new Date(req.body.date)
       }).returning();
       res.json(hour);
+    } catch (error) {
+      res.status(500).json({ message: 'Server error' });
+    }
+  });
+
+  app.get('/api/hours/:id', requireAuth, async (req: any, res) => {
+    const user = req.user;
+    const hourId = parseInt(req.params.id);
+
+    try {
+      const hour = await db.query.hours.findFirst({
+        where: eq(hours.id, hourId),
+        with: {
+          client: true
+        }
+      });
+
+      if (!hour) {
+        return res.status(404).json({ message: 'Hours entry not found' });
+      }
+
+      if (!user.isAdmin && hour.client.userId !== user.id) {
+        return res.status(403).json({ message: 'Unauthorized' });
+      }
+
+      res.json(hour);
+    } catch (error) {
+      res.status(500).json({ message: 'Server error' });
+    }
+  });
+
+  app.put('/api/hours/:id', requireAuth, async (req: any, res) => {
+    const user = req.user;
+    const hourId = parseInt(req.params.id);
+
+    if (!user.isAdmin) {
+      return res.status(403).json({ message: 'Only admin can update hours' });
+    }
+
+    try {
+      const [updatedHour] = await db.update(hours)
+        .set({
+          description: req.body.description,
+          hours: req.body.hours,
+          date: new Date(req.body.date)
+        })
+        .where(eq(hours.id, hourId))
+        .returning();
+
+      res.json(updatedHour);
+    } catch (error) {
+      res.status(500).json({ message: 'Server error' });
+    }
+  });
+
+  app.delete('/api/hours/:id', requireAuth, async (req: any, res) => {
+    const user = req.user;
+    const hourId = parseInt(req.params.id);
+
+    if (!user.isAdmin) {
+      return res.status(403).json({ message: 'Only admin can delete hours' });
+    }
+
+    try {
+      await db.delete(hours)
+        .where(eq(hours.id, hourId));
+
+      res.json({ success: true });
     } catch (error) {
       res.status(500).json({ message: 'Server error' });
     }
