@@ -10,13 +10,13 @@ export default function AuthPage() {
   return (
     <div className="min-h-screen w-full flex bg-background">
       {/* Left side - Image */}
-      <div className="hidden lg:block w-1/2 bg-muted">
-        <div className="h-full w-full bg-cover bg-center" style={{ backgroundImage: 'url("/path/to/your/image.jpg")' }}>
-          <div className="h-full w-full bg-black/50 p-12 flex flex-col justify-between">
+      <div className="hidden lg:block w-1/2">
+        <div className="h-full w-full bg-cover bg-center bg-[#4F46E5]">
+          <div className="h-full w-full p-12 flex flex-col justify-between">
             <h2 className="text-2xl font-bold text-white">Freelance Hours Tracker</h2>
             <div>
-              <h3 className="text-3xl font-bold text-white mb-4">Capturing Moments,<br/>Creating Memories</h3>
-              <p className="text-white/80">Track your freelance hours efficiently and manage client relationships seamlessly.</p>
+              <h3 className="text-3xl font-bold text-white mb-4">Track Your Hours,<br/>Manage Your Time</h3>
+              <p className="text-white/80">Efficiently track your freelance hours and manage client relationships with ease.</p>
             </div>
           </div>
         </div>
