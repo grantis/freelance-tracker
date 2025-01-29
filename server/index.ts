@@ -7,27 +7,10 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Trust proxy settings for secure cookies and proper protocol detection
-app.enable('trust proxy');
-
-// Force redirect to preferred domain in production
-const PREFERRED_DOMAIN = 'freelance.grantrigby.dev';
 app.use((req, res, next) => {
-  const host = req.get('host');
-
-  // In production, redirect all traffic to the preferred domain
-  if (process.env.NODE_ENV === 'production' && host && host !== PREFERRED_DOMAIN) {
-    return res.redirect(301, `https://${PREFERRED_DOMAIN}${req.url}`);
-  }
-
   const start = Date.now();
   const path = req.path;
   let capturedJsonResponse: Record<string, any> | undefined = undefined;
-
-  // Force HTTPS redirect if not secure and in production
-  if (process.env.NODE_ENV === 'production' && !req.secure) {
-    return res.redirect(`https://${host}${req.url}`);
-  }
 
   const originalResJson = res.json;
   res.json = function (bodyJson, ...args) {
@@ -71,8 +54,12 @@ app.use((req, res, next) => {
       const status = err.status || err.statusCode || 500;
       const message = err.message || "Internal Server Error";
       res.status(status).json({ message });
+      throw err;
     });
 
+    // importantly only setup vite in development and after
+    // setting up all the other routes so the catch-all route
+    // doesn't interfere with the other routes
     if (app.get("env") === "development") {
       console.log('Setting up Vite in development mode...');
       await setupVite(app, server);
@@ -83,7 +70,9 @@ app.use((req, res, next) => {
       console.log('✓ Static serving setup complete');
     }
 
-    const PORT = process.env.PORT || 3000;
+    // ALWAYS serve the app on port 5000
+    // this serves both the API and the client
+    const PORT = 5000;
     console.log(`Starting server on port ${PORT}...`);
 
     server.listen(PORT, "0.0.0.0", () => {
