@@ -8,7 +8,6 @@ import {
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { AnimatedSVG } from "@/components/ui/animated-svg";
 
 export default function Login() {
   const { toast } = useToast();
@@ -42,11 +41,6 @@ export default function Login() {
         <CardContent className="pt-6">
           {/* Header */}
           <div className="mb-6">
-            <AnimatedSVG 
-              src="/attached_assets/SVG/Scenes/Creative Design _ abstract, design, geometric, colors, shapes, symbol.svg"
-              alt="Design"
-              className="w-24 h-24 mx-auto mb-4"
-            />
             <h1 className="text-4xl font-semibold tracking-tight mb-3">
               Freelance Portal
             </h1>
@@ -67,7 +61,7 @@ export default function Login() {
                 variant="outline"
                 onClick={loginWithGoogle}
               >
-                <AnimatedSVG 
+                <img 
                   src="/assets/login-icon.svg" 
                   alt="Login" 
                   className="w-6 h-6 mr-3"
