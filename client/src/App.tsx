@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/dashboard";
 import AuthPage from "@/pages/auth-page";
+import LoginPage from "@/pages/login-page";
 import { useUser } from "@/lib/auth";
 import { Loader2 } from "lucide-react";
 
@@ -20,7 +21,13 @@ function AuthenticatedRouter() {
   }
 
   if (!user) {
-    return <AuthPage />;
+    return (
+      <Switch>
+        <Route path="/" component={LoginPage} />
+        <Route path="/register" component={AuthPage} />
+        <Route component={LoginPage} />
+      </Switch>
+    );
   }
 
   return (

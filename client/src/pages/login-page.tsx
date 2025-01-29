@@ -7,7 +7,7 @@ import { FcGoogle } from "react-icons/fc";
 import { Link } from "wouter";
 import { loginWithGoogle } from "@/lib/auth";
 
-export default function AuthPage() {
+export default function LoginPage() {
   return (
     <div className="min-h-screen w-full flex bg-background">
       {/* Left side - Image */}
@@ -36,34 +36,23 @@ export default function AuthPage() {
           <CardContent className="pt-6 space-y-6">
             {/* Form Header */}
             <div>
-              <h1 className="text-2xl font-semibold mb-2">Create an account</h1>
+              <h1 className="text-2xl font-semibold mb-2">Welcome back</h1>
               <p className="text-sm text-muted-foreground">
-                Already have an account?{" "}
-                <Link href="/" className="text-primary hover:underline">
-                  Sign in
+                New to our platform?{" "}
+                <Link href="/register" className="text-primary hover:underline">
+                  Create an account
                 </Link>
               </p>
             </div>
 
-            {/* Registration Form */}
+            {/* Login Form */}
             <form className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="firstName">First name</Label>
-                  <Input id="firstName" placeholder="Fletcher" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lastName">Last name</Label>
-                  <Input id="lastName" placeholder="Thompson" />
-                </div>
-              </div>
-
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="fletcher@example.com"
+                  placeholder="your@email.com"
                 />
               </div>
 
@@ -73,7 +62,7 @@ export default function AuthPage() {
               </div>
 
               <Button className="w-full" type="submit">
-                Create account
+                Sign in
               </Button>
             </form>
 
@@ -84,7 +73,7 @@ export default function AuthPage() {
               </div>
               <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-background px-2 text-muted-foreground">
-                  Or register with
+                  Or continue with
                 </span>
               </div>
             </div>
