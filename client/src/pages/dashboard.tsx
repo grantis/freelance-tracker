@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useUser, clearAuthenticating, useLogout } from "@/lib/auth";
+import { useUser, useLogout } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useState, useEffect } from "react";
@@ -12,13 +12,6 @@ import AdminDashboard from "./admin-dashboard";
 export default function Dashboard() {
   const { data: user, isLoading: userLoading } = useUser();
   const logout = useLogout();
-
-  // Clear authentication in progress when dashboard loads successfully
-  useEffect(() => {
-    if (user) {
-      clearAuthenticating();
-    }
-  }, [user]);
 
   if (userLoading) {
     return (
