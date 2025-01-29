@@ -13,8 +13,11 @@ const SessionStore = MemoryStore(session);
 const sessionSecret = crypto.randomBytes(32).toString('hex');
 
 const ADMIN_EMAIL = "grantrigby1992@gmail.com";
-const DOMAIN = 'freelance.grantrigby.dev';
-const CALLBACK_URL = `https://${DOMAIN}/api/auth/google/callback`;
+const DOMAIN = process.env.NODE_ENV === 'production' 
+  ? 'freelance.grantrigby.dev'
+  : process.env.REPL_SLUG ? `${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co` : 'localhost:5000';
+
+const CALLBACK_URL = `${process.env.NODE_ENV === 'production' ? 'https' : 'http'}://${DOMAIN}/api/auth/google/callback`;
 
 export function registerRoutes(app: Express): Server {
   app.use(session({
@@ -106,11 +109,6 @@ export function registerRoutes(app: Express): Server {
       console.log('Current host:', req.get('host'));
       console.log('Protocol:', req.protocol);
       console.log('Using callback URL:', CALLBACK_URL);
-
-      if (process.env.NODE_ENV === 'production' && req.get('host') !== DOMAIN) {
-        console.log('Invalid host detected:', req.get('host'));
-        return res.redirect(`https://${DOMAIN}/login`);
-      }
 
       passport.authenticate('google', {
         scope: ['profile', 'email'],
