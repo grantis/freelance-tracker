@@ -4,6 +4,10 @@ import { setupVite, serveStatic, log } from "./vite";
 import { db } from "@db";
 
 const app = express();
+
+// Trust proxy - important for correct protocol detection behind Replit's proxy
+app.set('trust proxy', 1);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -67,8 +71,7 @@ app.use((req, res, next) => {
       console.log('✓ Static serving setup complete');
     }
 
-    // ALWAYS serve the app on port 5000
-    // this serves both the API and the client
+    // Internal port configuration - not exposed in URLs
     const PORT = 5000;
     console.log(`Starting server on port ${PORT}...`);
 

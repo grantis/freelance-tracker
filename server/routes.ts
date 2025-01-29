@@ -14,10 +14,10 @@ const sessionSecret = crypto.randomBytes(32).toString('hex');
 
 const ADMIN_EMAIL = "grantrigby1992@gmail.com";
 const DOMAIN = process.env.REPL_SLUG 
-  ? `${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.replit.dev`  
+  ? `${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.replit.dev`
   : process.env.NODE_ENV === 'production' 
     ? 'freelance.grantrigby.dev'
-    : 'localhost:5000';  
+    : 'localhost';  
 
 const CALLBACK_URL = `${process.env.NODE_ENV === 'production' || process.env.REPL_SLUG ? 'https' : 'http'}://${DOMAIN}/api/auth/google/callback`;
 
