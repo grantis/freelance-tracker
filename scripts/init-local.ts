@@ -22,12 +22,12 @@ async function initializeLocalEnvironment() {
       console.log('✅ .env file already exists');
     } catch {
       const envTemplate = `# Database Configuration
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/freelance_tracker
+DATABASE_URL=postgresql://localhost:5432/freelance_tracker
 
 # Google OAuth Configuration
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
-GOOGLE_CALLBACK_URL=http://localhost:5000/api/auth/google/callback`;
+GOOGLE_CALLBACK_URL=http://localhost:3000/api/auth/google/callback`;
 
       await fs.writeFile(envPath, envTemplate);
       console.log('✅ Created .env file with local configuration');
@@ -77,8 +77,8 @@ GOOGLE_CALLBACK_URL=http://localhost:5000/api/auth/google/callback`;
     console.log('2. Create a new project or select an existing one');
     console.log('3. Enable the Google+ API');
     console.log('4. Create OAuth 2.0 credentials');
-    console.log('5. Add http://localhost:5000 to Authorized JavaScript origins');
-    console.log('6. Add http://localhost:5000/api/auth/google/callback to Authorized redirect URIs');
+    console.log('5. Add http://localhost:3000 to Authorized JavaScript origins');
+    console.log('6. Add http://localhost:3000/api/auth/google/callback to Authorized redirect URIs');
   } catch (error) {
     console.error('❌ Error during initialization:', error);
     process.exit(1);
