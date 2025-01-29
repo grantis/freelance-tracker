@@ -58,32 +58,40 @@ app.use((req, res, next) => {
   console.log('Starting server initialization...');
   try {
     // Test database connection
+    console.log('Testing database connection...');
     await db.query.users.findMany();
-    console.log('Database connection successful');
+    console.log('✓ Database connection successful');
 
+    console.log('Setting up application routes...');
     const server = registerRoutes(app);
+    console.log('✓ Routes registered successfully');
 
     app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+      console.error('Server error:', err);
       const status = err.status || err.statusCode || 500;
       const message = err.message || "Internal Server Error";
-      console.error('Error:', err);
       res.status(status).json({ message });
     });
 
     if (app.get("env") === "development") {
       console.log('Setting up Vite in development mode...');
       await setupVite(app, server);
+      console.log('✓ Vite setup complete');
     } else {
       console.log('Setting up static serving for production...');
       serveStatic(app);
+      console.log('✓ Static serving setup complete');
     }
 
-    // Use port 3000 to match Replit configuration
-    // This will use the PORT environment variable if set (for Replit),
-    // otherwise fallback to 3000 for local development
     const PORT = process.env.PORT || 3000;
+    console.log(`Starting server on port ${PORT}...`);
+
     server.listen(PORT, "0.0.0.0", () => {
-      log(`Server started successfully on port ${PORT}`);
+      console.log('=================================');
+      console.log(`✓ Server is running!`);
+      console.log(`• Port: ${PORT}`);
+      console.log(`• Environment: ${app.get("env")}`);
+      console.log('=================================');
     });
   } catch (error) {
     console.error('Failed to start server:', error);

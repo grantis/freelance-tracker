@@ -14,14 +14,12 @@ import { Link } from "wouter";
 export default function Login() {
   const { toast } = useToast();
 
-  // Clear any stale auth states on mount
   useEffect(() => {
     if (!window.location.search.includes('error=')) {
       clearAuthenticating();
     }
   }, []);
 
-  // Handle errors from OAuth callback
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.has('error')) {
@@ -44,7 +42,7 @@ export default function Login() {
         <CardContent className="pt-6">
           {/* Back button */}
           <Link href="/">
-            <Button variant="ghost" size="icon" className="mb-8 hover:bg-transparent">
+            <Button variant="ghost" size="icon" className="mb-8 hover:bg-transparent p-0">
               <ArrowLeft className="h-6 w-6 text-muted-foreground hover:text-foreground transition-colors" />
             </Button>
           </Link>
@@ -72,6 +70,7 @@ export default function Login() {
             ) : (
               <Button 
                 className="w-full h-[72px] text-base justify-start px-6" 
+                variant="outline"
                 onClick={loginWithGoogle}
               >
                 <SiGoogle className="mr-3 h-6 w-6" />
