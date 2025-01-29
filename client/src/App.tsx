@@ -3,13 +3,29 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import NotFound from "@/pages/not-found";
-import AuthPage from "@/pages/auth-page";
+import Dashboard from "@/pages/dashboard";
+import Login from "@/pages/login";
+import { useUser } from "@/lib/auth";
+import { Loader2 } from "lucide-react";
 
 function Router() {
+  const { user, isLoading } = useUser();
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-border" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Login />;
+  }
+
   return (
     <Switch>
-      <Route path="/auth" component={AuthPage} />
-      <Route path="/" component={AuthPage} />
+      <Route path="/" component={Dashboard} />
       <Route component={NotFound} />
     </Switch>
   );

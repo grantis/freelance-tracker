@@ -78,7 +78,10 @@ app.use((req, res, next) => {
       serveStatic(app);
     }
 
-    const PORT = 3000;
+    // Use port 3000 to match Replit configuration
+    // This will use the PORT environment variable if set (for Replit),
+    // otherwise fallback to 3000 for local development
+    const PORT = process.env.PORT || 3000;
     server.listen(PORT, "0.0.0.0", () => {
       log(`Server started successfully on port ${PORT}`);
     });

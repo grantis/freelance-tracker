@@ -1,9 +1,6 @@
 import { Button } from "@/components/ui/button";
 import {
   Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
   CardContent,
 } from "@/components/ui/card";
 import { loginWithGoogle, isAuthenticating, clearAuthenticating } from "@/lib/auth";
@@ -11,14 +8,14 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { SiGoogle } from "react-icons/si";
 import { useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { AlertCircle } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+import { Link } from "wouter";
 
 export default function Login() {
   const { toast } = useToast();
 
   // Clear any stale auth states on mount
   useEffect(() => {
-    // If we're not on the callback URL with error, clear any stale auth states
     if (!window.location.search.includes('error=')) {
       clearAuthenticating();
     }
@@ -35,7 +32,6 @@ export default function Login() {
         description: "There was a problem signing in with Google. Please try again.",
         duration: 5000,
       });
-      // Remove the error from URL
       window.history.replaceState({}, '', '/login');
     }
   }, [toast]);
@@ -43,35 +39,46 @@ export default function Login() {
   const authenticating = isAuthenticating();
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4 sm:p-6 md:p-8">
-      <Card className="w-full max-w-md mx-auto">
-        <CardHeader className="text-center space-y-2 sm:space-y-3">
-          <CardTitle className="text-xl sm:text-2xl md:text-3xl font-bold">
-            Freelance Tracker
-          </CardTitle>
-          <CardDescription className="text-sm sm:text-base">
-            Track freelance hours with ease
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {authenticating ? (
-            <div className="flex flex-col items-center gap-4 py-4">
-              <LoadingSpinner size="lg" />
-              <p className="text-sm text-muted-foreground">
-                Authenticating with Google...
-              </p>
-            </div>
-          ) : (
-            <Button 
-              className="w-full flex items-center justify-center gap-2 py-6" 
-              onClick={() => {
-                loginWithGoogle();
-              }}
-            >
-              <SiGoogle className="h-4 w-4" />
-              <span className="text-base">Sign in with Google</span>
+    <div className="min-h-screen w-full flex items-center justify-center bg-background p-4">
+      <Card className="w-full max-w-sm mx-auto">
+        <CardContent className="pt-6">
+          {/* Back button */}
+          <Link href="/">
+            <Button variant="ghost" size="icon" className="mb-8 hover:bg-transparent">
+              <ArrowLeft className="h-6 w-6 text-muted-foreground hover:text-foreground transition-colors" />
             </Button>
-          )}
+          </Link>
+
+          {/* Header */}
+          <div className="mb-12">
+            <h1 className="text-4xl font-semibold tracking-tight mb-3">Login</h1>
+            <p className="text-sm text-muted-foreground">
+              Need an account?{" "}
+              <Link href="/register" className="text-primary hover:underline">
+                Register here →
+              </Link>
+            </p>
+          </div>
+
+          {/* Auth options */}
+          <div className="space-y-4">
+            {authenticating ? (
+              <div className="flex flex-col items-center gap-4 py-4">
+                <LoadingSpinner size="lg" />
+                <p className="text-sm text-muted-foreground">
+                  Authenticating with Google...
+                </p>
+              </div>
+            ) : (
+              <Button 
+                className="w-full h-[72px] text-base justify-start px-6" 
+                onClick={loginWithGoogle}
+              >
+                <SiGoogle className="mr-3 h-6 w-6" />
+                <span className="flex-1 text-left">Continue with Google</span>
+              </Button>
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>
