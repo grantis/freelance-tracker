@@ -67,8 +67,7 @@ app.use((req, res, next) => {
       console.log('✓ Static serving setup complete');
     }
 
-    // Use process.env.PORT if available (Replit sets this)
-    const PORT = process.env.PORT || 5000;
+    const PORT = 3000;
     console.log(`Starting server on port ${PORT}...`);
 
     server.listen(PORT, "0.0.0.0", () => {

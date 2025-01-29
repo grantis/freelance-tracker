@@ -17,7 +17,7 @@ const DOMAIN = process.env.REPL_SLUG
   ? `${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.replit.dev`
   : process.env.NODE_ENV === 'production' 
     ? 'freelance.grantrigby.dev'
-    : 'localhost:5000';
+    : 'localhost:3000';
 
 const CALLBACK_URL = `${process.env.NODE_ENV === 'production' || process.env.REPL_SLUG ? 'https' : 'http'}://${DOMAIN}/api/auth/google/callback`;
 
@@ -30,10 +30,10 @@ export function registerRoutes(app: Express): Server {
       checkPeriod: 86400000 // 24 hours
     }),
     cookie: {
-      secure: process.env.NODE_ENV === 'production',
+      secure: process.env.NODE_ENV === 'production' || !!process.env.REPL_SLUG,
       httpOnly: true,
       sameSite: 'lax',
-      domain: process.env.NODE_ENV === 'production' ? `.${DOMAIN}` : undefined
+      domain: process.env.NODE_ENV === 'production' ? '.freelance.grantrigby.dev' : undefined
     }
   }));
 
