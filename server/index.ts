@@ -1,6 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { db } from "@db";
 
 const app = express();
 app.use(express.json());
@@ -54,24 +55,35 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  const server = registerRoutes(app);
+  console.log('Starting server initialization...');
+  try {
+    // Test database connection
+    await db.query.users.findMany();
+    console.log('Database connection successful');
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
-    console.error('Error:', err);
-    res.status(status).json({ message });
-  });
+    const server = registerRoutes(app);
 
-  if (app.get("env") === "development") {
-    await setupVite(app, server);
-  } else {
-    serveStatic(app);
+    app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+      const status = err.status || err.statusCode || 500;
+      const message = err.message || "Internal Server Error";
+      console.error('Error:', err);
+      res.status(status).json({ message });
+    });
+
+    if (app.get("env") === "development") {
+      console.log('Setting up Vite in development mode...');
+      await setupVite(app, server);
+    } else {
+      console.log('Setting up static serving for production...');
+      serveStatic(app);
+    }
+
+    const PORT = 3000;
+    server.listen(PORT, "0.0.0.0", () => {
+      log(`Server started successfully on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
   }
-
-  // Changed port from 5000 to 3000
-  const PORT = 3000;
-  server.listen(PORT, "0.0.0.0", () => {
-    log(`serving on port ${PORT}`);
-  });
 })();
