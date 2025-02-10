@@ -65,4 +65,4 @@ jobs:
             --min-instances 0 \
             --max-instances 100 \
             --allow-unauthenticated \
-            --set-env-vars="PORT=8080,DATABASE_URL=${{ secrets.DATABASE_URL }},GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }},GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }},GOOGLE_CALLBACK_URL=${{ secrets.GOOGLE_CALLBACK_URL }}"
+            --set-env-vars="DATABASE_URL=${{ secrets.DATABASE_URL }},GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }},GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }},GOOGLE_CALLBACK_URL=${{ secrets.GOOGLE_CALLBACK_URL }}"
