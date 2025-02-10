@@ -4,18 +4,25 @@ import { setupVite, serveStatic, log } from "./vite";
 import { db } from "@db";
 import { config } from "dotenv";
 
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+});
+
 config();
 
 const app = express();
 const port = Number(process.env.PORT) || 8080;
 
-// Add startup logging
+// Debug logging
 console.log('==== Server Starting ====');
-console.log('Environment variables:');
-console.log(`PORT: ${port}`);
-console.log(`NODE_ENV: ${process.env.NODE_ENV}`);
-console.log(`DATABASE_URL: ${process.env.DATABASE_URL ? 'Set' : 'Not set'}`);
-console.log(`GOOGLE_CLIENT_ID: ${process.env.GOOGLE_CLIENT_ID ? 'Set' : 'Not set'}`);
+console.log('Environment:');
+Object.keys(process.env).forEach(key => {
+  console.log(`${key}: ${key.includes('SECRET') ? '[HIDDEN]' : process.env[key]}`);
+});
 
 // Trust proxy - important for correct protocol detection behind Replit's proxy
 app.set('trust proxy', 1);
@@ -53,8 +60,8 @@ app.use((req, res, next) => {
   next();
 });
 
-// Basic health check endpoint
-app.get('/health', (req, res) => {
+// Health check endpoint
+app.get('/', (req, res) => {
   res.send('OK');
 });
 

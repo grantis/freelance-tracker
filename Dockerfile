@@ -4,17 +4,18 @@ FROM node:20-slim
 # Create app directory
 WORKDIR /app
 
-# Copy package files
+# Install production dependencies
 COPY package*.json ./
-
-# Install dependencies
 RUN npm ci --only=production
 
-# Copy built application
+# Copy built files
 COPY dist/ ./dist/
 
-# Expose the port
-EXPOSE 8080
+# Health check
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:8080/ || exit 1
 
 # Start the server
-CMD ["node", "--enable-source-maps", "dist/index.js"] 
+ENV NODE_ENV=production
+EXPOSE 8080
+CMD ["node", "dist/index.js"] 
