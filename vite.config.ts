@@ -21,6 +21,10 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       external: ['vite']
-    }
+    },
+    commonjsOptions: {
+      exclude: ['vite']
+    },
+    ssr: true
   },
 });
