@@ -2,6 +2,9 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { db } from "@db";
+import { config } from "dotenv";
+
+config();
 
 const app = express();
 
@@ -72,15 +75,20 @@ app.use((req, res, next) => {
     }
 
     // Internal port configuration - not exposed in URLs
-    const port = process.env.PORT || 5000;
-    console.log(`Starting server on port ${port}...`);
+    const port = Number(process.env.PORT) || 8080;
+    console.log('Starting server with configuration:');
+    console.log(`PORT: ${port}`);
+    console.log(`DATABASE_URL: ${process.env.DATABASE_URL ? 'Set' : 'Not set'}`);
+    console.log(`GOOGLE_CLIENT_ID: ${process.env.GOOGLE_CLIENT_ID ? 'Set' : 'Not set'}`);
 
-    server.listen(port, "0.0.0.0", () => {
+    server.listen(port, () => {
       console.log('=================================');
       console.log(`✓ Server is running!`);
       console.log(`• Port: ${port}`);
       console.log(`• Environment: ${app.get("env")}`);
       console.log('=================================');
+    }).on('error', (err) => {
+      console.error('Failed to start server:', err);
     });
   } catch (error) {
     console.error('Failed to start server:', error);
