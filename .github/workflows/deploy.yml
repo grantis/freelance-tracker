@@ -61,9 +61,11 @@ jobs:
             --region $REGION \
             --memory 512Mi \
             --cpu 1 \
-            --min-instances 0 \
+            --min-instances 1 \
             --max-instances 100 \
             --allow-unauthenticated \
             --set-env-vars="DATABASE_URL=${{ secrets.DATABASE_URL }},GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }},GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }},GOOGLE_CALLBACK_URL=${{ secrets.GOOGLE_CALLBACK_URL }}" \
             --execution-environment=gen2 \
-            --use-http2
+            --use-http2 \
+            --timeout=600 \
+            --port=8080

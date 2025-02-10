@@ -4,8 +4,9 @@ import { setupVite, serveStatic, log } from "./vite";
 import { db } from "@db";
 import { config } from "dotenv";
 
+// Enable detailed logging
 process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  console.error('Unhandled Rejection:', reason);
 });
 
 process.on('uncaughtException', (error) => {
@@ -17,12 +18,10 @@ config();
 const app = express();
 const port = Number(process.env.PORT) || 8080;
 
-// Debug logging
-console.log('==== Server Starting ====');
-console.log('Environment:');
-Object.keys(process.env).forEach(key => {
-  console.log(`${key}: ${key.includes('SECRET') ? '[HIDDEN]' : process.env[key]}`);
-});
+// Log startup information
+console.log('=== Starting Server ===');
+console.log('Environment:', process.env.NODE_ENV);
+console.log('Port:', port);
 
 // Trust proxy - important for correct protocol detection behind Replit's proxy
 app.set('trust proxy', 1);
@@ -61,7 +60,7 @@ app.use((req, res, next) => {
 });
 
 // Health check endpoint
-app.get('/', (req, res) => {
+app.get('/health', (req, res) => {
   res.send('OK');
 });
 
@@ -96,8 +95,8 @@ app.get('/', (req, res) => {
     }
 
     // Start the server
-    server.listen(port, () => {
-      console.log(`Server is running on port ${port}`);
+    server.listen(port, '0.0.0.0', () => {
+      console.log(`Server is running at http://0.0.0.0:${port}`);
     }).on('error', (err) => {
       console.error('Failed to start server:', err);
       process.exit(1); // Exit on error

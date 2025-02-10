@@ -1,24 +1,41 @@
-# Use Node.js 20
-FROM node:20-slim
+# Build stage
+FROM node:20-slim AS builder
 
-# Create app directory
 WORKDIR /app
 
-# Copy all package files
+# Copy package files
 COPY package*.json ./
 
-# Install ALL dependencies (including dev dependencies)
+# Install ALL dependencies
 RUN npm install
 
-# Copy built application
-COPY dist/ ./dist/
+# Copy source
+COPY . .
 
-# Health check
+# Build the application
+RUN npm run build
+
+# Production stage
+FROM node:20-slim
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install production dependencies
+RUN npm ci --only=production
+
+# Copy built files from builder
+COPY --from=builder /app/dist ./dist
+
+# Add container health check
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:8080/ || exit 1
-
-# Expose the port
-EXPOSE 8080
+  CMD curl -f http://localhost:8080/health || exit 1
 
 # Start the server
+ENV NODE_ENV=production
+ENV PORT=8080
+EXPOSE 8080
+
 CMD ["node", "dist/index.js"] 
