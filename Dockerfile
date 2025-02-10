@@ -13,8 +13,11 @@ RUN npm ci --only=production
 # Copy built application
 COPY dist/ ./dist/
 
-# Expose the port
-EXPOSE 5000
+# Expose the port (this is for documentation)
+EXPOSE ${PORT}
+
+# Set environment variable
+ENV PORT=5000
 
 # Start the server
 CMD [ "node", "dist/index.js" ] 

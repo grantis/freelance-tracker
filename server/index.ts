@@ -72,13 +72,13 @@ app.use((req, res, next) => {
     }
 
     // Internal port configuration - not exposed in URLs
-    const PORT = 5000;
-    console.log(`Starting server on port ${PORT}...`);
+    const port = process.env.PORT || 5000;
+    console.log(`Starting server on port ${port}...`);
 
-    server.listen(PORT, "0.0.0.0", () => {
+    server.listen(port, "0.0.0.0", () => {
       console.log('=================================');
       console.log(`✓ Server is running!`);
-      console.log(`• Port: ${PORT}`);
+      console.log(`• Port: ${port}`);
       console.log(`• Environment: ${app.get("env")}`);
       console.log('=================================');
     });
