@@ -1,14 +1,14 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
+import react from '@vitejs/plugin-react';
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  plugins: [react()],
+  root: 'client',
   build: {
-    // Client build configuration
-    outDir: 'dist/client',
-    rollupOptions: {
-      input: resolve(__dirname, 'index.html')
-    }
+    outDir: '../dist/client',
+    emptyOutDir: true
   },
   server: {
     port: 5000

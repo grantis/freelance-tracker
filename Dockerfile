@@ -5,14 +5,12 @@ WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
-
-# Install ALL dependencies
-RUN npm install
+RUN npm ci
 
 # Copy source
 COPY . .
 
-# Build the application
+# Build application
 RUN npm run build
 
 # Production stage
@@ -20,13 +18,11 @@ FROM node:20-slim
 
 WORKDIR /app
 
-# Copy package files
+# Copy package files and install production dependencies
 COPY package*.json ./
-
-# Install production dependencies
 RUN npm ci --only=production
 
-# Copy built files from builder
+# Copy built files
 COPY --from=builder /app/dist ./dist
 
 # Add container health check
@@ -38,4 +34,4 @@ ENV NODE_ENV=production
 ENV PORT=8080
 EXPOSE 8080
 
-CMD ["node", "dist/index.js"] 
+CMD ["node", "dist/server/index.js"] 
