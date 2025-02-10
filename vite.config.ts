@@ -12,5 +12,11 @@ export default defineConfig({
   },
   server: {
     port: 5000
+  },
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, './client/src'),
+      '@db': resolve(__dirname, './server/db')
+    }
   }
 });
