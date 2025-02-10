@@ -13,11 +13,8 @@ RUN npm ci --only=production
 # Copy built application
 COPY dist/ ./dist/
 
-# Expose the port (this is for documentation)
-EXPOSE ${PORT}
-
-# Set environment variable
-ENV PORT=5000
+# Expose the port
+EXPOSE 8080
 
 # Start the server
-CMD [ "node", "dist/index.js" ] 
+CMD ["node", "--enable-source-maps", "dist/index.js"] 

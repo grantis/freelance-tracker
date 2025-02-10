@@ -7,6 +7,15 @@ import { config } from "dotenv";
 config();
 
 const app = express();
+const port = Number(process.env.PORT) || 8080;
+
+// Add startup logging
+console.log('==== Server Starting ====');
+console.log('Environment variables:');
+console.log(`PORT: ${port}`);
+console.log(`NODE_ENV: ${process.env.NODE_ENV}`);
+console.log(`DATABASE_URL: ${process.env.DATABASE_URL ? 'Set' : 'Not set'}`);
+console.log(`GOOGLE_CLIENT_ID: ${process.env.GOOGLE_CLIENT_ID ? 'Set' : 'Not set'}`);
 
 // Trust proxy - important for correct protocol detection behind Replit's proxy
 app.set('trust proxy', 1);
@@ -44,6 +53,11 @@ app.use((req, res, next) => {
   next();
 });
 
+// Basic health check endpoint
+app.get('/health', (req, res) => {
+  res.send('OK');
+});
+
 (async () => {
   console.log('Starting server initialization...');
   try {
@@ -74,21 +88,21 @@ app.use((req, res, next) => {
       console.log('✓ Static serving setup complete');
     }
 
-    // Internal port configuration - not exposed in URLs
-    const port = Number(process.env.PORT) || 8080;
-    console.log('Starting server with configuration:');
-    console.log(`PORT: ${port}`);
-    console.log(`DATABASE_URL: ${process.env.DATABASE_URL ? 'Set' : 'Not set'}`);
-    console.log(`GOOGLE_CLIENT_ID: ${process.env.GOOGLE_CLIENT_ID ? 'Set' : 'Not set'}`);
-
+    // Start the server
     server.listen(port, () => {
-      console.log('=================================');
-      console.log(`✓ Server is running!`);
-      console.log(`• Port: ${port}`);
-      console.log(`• Environment: ${app.get("env")}`);
-      console.log('=================================');
+      console.log(`Server is running on port ${port}`);
     }).on('error', (err) => {
       console.error('Failed to start server:', err);
+      process.exit(1); // Exit on error
+    });
+
+    // Handle shutdown
+    process.on('SIGTERM', () => {
+      console.log('SIGTERM received, shutting down...');
+      server.close(() => {
+        console.log('Server closed');
+        process.exit(0);
+      });
     });
   } catch (error) {
     console.error('Failed to start server:', error);
