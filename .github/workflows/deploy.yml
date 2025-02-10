@@ -47,7 +47,7 @@ jobs:
 
       - name: Build and Push Docker image
         run: |
-          gcloud builds submit --tag gcr.io/$PROJECT_ID/$SERVICE_NAME
+          gcloud builds submit --tag gcr.io/$PROJECT_ID/$SERVICE_NAME --dockerfile=Dockerfile .
 
       - name: Deploy to Cloud Run
         run: |
