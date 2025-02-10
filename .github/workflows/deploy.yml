@@ -1,3 +1,5 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+
 name: Deploy to Google Cloud
 
 on:
@@ -47,7 +49,7 @@ jobs:
 
       - name: Build and Push Docker image
         run: |
-          gcloud builds submit --tag gcr.io/$PROJECT_ID/$SERVICE_NAME --dockerfile=Dockerfile .
+          gcloud builds submit --tag gcr.io/$PROJECT_ID/$SERVICE_NAME
 
       - name: Deploy to Cloud Run
         run: |
