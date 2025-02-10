@@ -1,0 +1,77 @@
+gcloud sql databases create freelance_tracker --instance=freelance-db
+Creating Cloud SQL database...done.                                                                                                 
+Created database [freelance_tracker].
+instance: freelance-db
+name: freelance_tracker
+project: grantrigbydev
+
+
+ curl -o cloud-sql-proxy https://dl.google.com/cloudsql/cloud_sql_proxy.darwin.amd64
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100 21.2M  100 21.2M    0     0  8474k      0  0:00:02  0:00:02 --:--:-- 8477k
+grant@mpa FreelanceTracker % chmod +x cloud-sql-proxy
+grant@mpa FreelanceTracker % ./cloud-sql-proxy grantrigbydev:us-east1:freelance-db
+2025/02/10 17:26:52 This is the Cloud SQL Proxy v1. It is no longer receiving active feature development. For the latest features and improvements, migrate to the v2 version of the Cloud SQL Proxy. For details, see: https://github.com/GoogleCloudPlatform/cloud-sql-proxy/blob/main/migration-guide.md
+2025/02/10 17:26:52 current FDs rlimit set to 61440, wanted limit is 8500. Nothing to do here.
+2025/02/10 17:27:04 Using gcloud's active project: [grantrigbydev]
+2025/02/10 17:27:08 must set -dir: using a unix socket for grantrigbydev:us-east1:freelance-db
+
+
+
+// connect to the database
+grant@mpa FreelanceTracker % psql "postgresql://neondb_owner:npg_niEwHMlm42Zz@localhost:5433/freelance_tracker"
+psql (16.6 (Homebrew))
+Type "help" for help.
+
+freelance_tracker=> 
+
+-- List all tables
+\dt
+
+-- Check connection info
+\conninfo
+
+-- Exit psql
+\q
+
+
+
+
+
+
+'ll help you set up GitHub Actions to deploy to Google Cloud. First, we need to create a workflow file. Create a new file at .github/workflows/deploy.yml:
+dist
+Before this will work, you need to:
+Create a Service Account in Google Cloud:
+
+gcloud iam service-accounts create github-actions \
+    --display-name="GitHub Actions Deploy"
+
+    
+"
+Grant necessary permissions:
+"
+gcloud projects add-iam-policy-binding grantrigbydev \
+    --member="serviceAccount:github-actions@grantrigbydev.iam.gserviceaccount.com" \
+    --role="roles/run.admin"
+
+gcloud projects add-iam-policy-binding grantrigbydev \
+    --member="serviceAccount:github-actions@grantrigbydev.iam.gserviceaccount.com" \
+    --role="roles/storage.admin"
+
+
+Create and download the service account key:
+
+gcloud iam service-accounts keys create key.json \
+    --iam-account=github-actions@grantrigbydev.iam.gserviceaccount.com
+
+
+com
+Add these GitHub repository secrets:
+GCP_SA_KEY: Content of the key.json file
+DATABASE_URL: Your Cloud SQL connection string
+GOOGLE_CLIENT_ID: Your OAuth client ID
+GOOGLE_CLIENT_SECRET: Your OAuth client secret
+GOOGLE_CALLBACK_URL: Your production callback URL
+Would you like me to help you with any of these steps?
