@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { db } from "@db";
-import { users, clients, hours } from "server/db/schema";
+import { users, clients, hours } from "./db/schema.js";
 import { eq, and } from "drizzle-orm";
 import passport from "passport";
 import { Strategy as GoogleStrategy, Profile } from "passport-google-oauth20";

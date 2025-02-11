@@ -1,6 +1,6 @@
 import express, { type Request, Response, NextFunction } from "express";
-import { registerRoutes } from "./routes";
-import { setupVite, serveStatic, log } from "./vite";
+import { registerRoutes } from "./routes.js";
+import { setupVite, serveStatic, log } from "./vite.js";
 import { db } from "@db";
 import { config } from "dotenv";
 
@@ -97,9 +97,8 @@ app.get('/health', (req, res) => {
     // Start the server
     server.listen(port, '0.0.0.0', () => {
       console.log(`Server is running at http://0.0.0.0:${port}`);
-    }).on('error', (err) => {
-      console.error('Failed to start server:', err);
-      process.exit(1); // Exit on error
+    }).on('error', (err: Error) => {
+      console.error('Server error:', err);
     });
 
     // Handle shutdown
