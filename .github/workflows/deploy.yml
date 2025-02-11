@@ -33,6 +33,7 @@ jobs:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_CALLBACK_URL: ${{ secrets.GOOGLE_CALLBACK_URL }}
+          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
 
       - name: Google Auth
         uses: google-github-actions/auth@v2
