@@ -44,7 +44,6 @@ jobs:
           image: gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
           env_vars: |
             NODE_ENV=production
-            PORT=8080
             DOMAIN=freelance.grantrigby.dev
           secrets: |
             DATABASE_URL=freelance-db-url:latest
