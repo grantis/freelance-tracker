@@ -4,7 +4,7 @@ import { db } from "@db";
 import { users, clients, hours } from "server/db/schema";
 import { eq, and } from "drizzle-orm";
 import passport from "passport";
-import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+import { Strategy as GoogleStrategy, Profile } from "passport-google-oauth20";
 import session from "express-session";
 import MemoryStore from "memorystore";
 import crypto from "crypto";
@@ -42,53 +42,62 @@ export function registerRoutes(app: Express): Server {
   app.use(passport.initialize());
   app.use(passport.session());
 
-  passport.use(new GoogleStrategy({
-    clientID: process.env.GOOGLE_CLIENT_ID!,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    callbackURL: CALLBACK_URL,
-    proxy: true
-  }, async (accessToken, refreshToken, profile, done) => {
-    try {
-      console.log('Google OAuth callback received for profile:', profile.id);
-      const email = profile.emails?.[0].value || '';
+  passport.use(
+    new GoogleStrategy(
+      {
+        clientID: process.env.GOOGLE_CLIENT_ID!,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+        callbackURL: CALLBACK_URL,
+      },
+      async (
+        accessToken: string,
+        refreshToken: string,
+        profile: Profile,
+        done: (error: any, user?: any) => void
+      ) => {
+        try {
+          console.log('Google OAuth callback received for profile:', profile.id);
+          const email = profile.emails?.[0].value || '';
 
-      let user = await db.query.users.findFirst({
-        where: eq(users.googleId, profile.id)
-      });
+          let user = await db.query.users.findFirst({
+            where: eq(users.googleId, profile.id)
+          });
 
-      if (!user) {
-        user = await db.query.users.findFirst({
-          where: eq(users.email, email)
-        });
+          if (!user) {
+            user = await db.query.users.findFirst({
+              where: eq(users.email, email)
+            });
 
-        if (user) {
-          const [updatedUser] = await db.update(users)
-            .set({ googleId: profile.id })
-            .where(eq(users.id, user.id))
-            .returning();
-          user = updatedUser;
-        } else {
-          const isAdmin = email === ADMIN_EMAIL;
-          console.log('Is admin?', isAdmin, 'for email:', email);
+            if (user) {
+              const [updatedUser] = await db.update(users)
+                .set({ googleId: profile.id })
+                .where(eq(users.id, user.id))
+                .returning();
+              user = updatedUser;
+            } else {
+              const isAdmin = email === ADMIN_EMAIL;
+              console.log('Is admin?', isAdmin, 'for email:', email);
 
-          const [newUser] = await db.insert(users).values({
-            email: email,
-            name: profile.displayName,
-            googleId: profile.id,
-            isAdmin: isAdmin,
-            isFreelancer: isAdmin
-          }).returning();
-          user = newUser;
+              const [newUser] = await db.insert(users).values({
+                email: email,
+                name: profile.displayName,
+                googleId: profile.id,
+                isAdmin: isAdmin,
+                isFreelancer: isAdmin
+              }).returning();
+              user = newUser;
+            }
+          }
+
+          console.log('User authenticated successfully:', user.id);
+          done(null, user);
+        } catch (error) {
+          console.error('Error in Google OAuth callback:', error);
+          done(error as Error);
         }
       }
-
-      console.log('User authenticated successfully:', user.id);
-      done(null, user);
-    } catch (error) {
-      console.error('Error in Google OAuth callback:', error);
-      done(error as Error);
-    }
-  }));
+    )
+  );
 
   passport.serializeUser((user: any, done) => {
     console.log('Serializing user:', user.id);
