@@ -3,14 +3,18 @@ FROM node:20-slim AS builder
 
 WORKDIR /app
 
-# Copy package files
+# Copy package files from all workspaces
 COPY package*.json ./
+COPY server/package*.json ./server/
+COPY packages/types/package*.json ./packages/types/
+
+# Install dependencies including TypeScript
 RUN npm ci
 
-# Copy source
+# Copy source files
 COPY . .
 
-# Build server only
+# Build server
 RUN npm run build:server
 
 # Production stage
@@ -18,12 +22,10 @@ FROM node:20-slim
 
 WORKDIR /app
 
-# Copy package files and install production dependencies
+# Copy package files
 COPY package*.json ./
-RUN npm ci --only=production
-
-# Verify dist directory exists before copying
-RUN mkdir -p dist/server
+COPY server/package*.json ./server/
+RUN npm ci --omit=dev --workspace=server
 
 # Copy built server files
 COPY --from=builder /app/dist/server ./dist/server
@@ -37,23 +39,4 @@ ENV NODE_ENV=production
 ENV PORT=8080
 EXPOSE 8080
 
-# Verify the build output before starting
-RUN ls -la /app/dist/server
-
-# Add startup verification script
-COPY <<'EOF' /app/start.sh
-#!/bin/sh
-echo "=== Container Starting ==="
-echo "Working Directory: $(pwd)"
-echo "Directory Contents:"
-ls -la
-echo "Server Directory Contents:"
-ls -la dist/server
-echo "Environment Variables:"
-env | grep -v 'SECRET\|KEY\|PASSWORD\|TOKEN'
-echo "=== Starting Application ==="
-exec node dist/server/index.js
-EOF
-
-RUN chmod +x /app/start.sh
-CMD ["/app/start.sh"] 
+CMD ["node", "dist/server/index.js"] 
