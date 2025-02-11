@@ -37,4 +37,20 @@ EXPOSE 8080
 # Verify the build output before starting
 RUN ls -la /app/dist/server
 
-CMD ["node", "dist/server/index.js"] 
+# Add startup verification script
+COPY <<'EOF' /app/start.sh
+#!/bin/sh
+echo "=== Container Starting ==="
+echo "Working Directory: $(pwd)"
+echo "Directory Contents:"
+ls -la
+echo "Server Directory Contents:"
+ls -la dist/server
+echo "Environment Variables:"
+env | grep -v 'SECRET\|KEY\|PASSWORD\|TOKEN'
+echo "=== Starting Application ==="
+exec node dist/server/index.js
+EOF
+
+RUN chmod +x /app/start.sh
+CMD ["/app/start.sh"] 
