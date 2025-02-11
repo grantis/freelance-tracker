@@ -7,7 +7,6 @@
     "packages/types"
   ],
   "scripts": {
-    "dev": "vite",
     "build": "rm -rf dist && npm run build:client && npm run build:server",
     "build:client": "npm run build --workspace=client",
     "build:server": "npm run build --workspace=server",
