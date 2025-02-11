@@ -22,6 +22,9 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci --only=production
 
+# Verify dist directory exists before copying
+RUN mkdir -p dist/server
+
 # Copy built server files
 COPY --from=builder /app/dist/server ./dist/server
 

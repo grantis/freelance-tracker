@@ -32,15 +32,30 @@ jobs:
         run: npm run build:client
         env:
           VITE_API_URL: https://freelance-api-xxxxx-uc.a.run.app
-          VITE_GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
 
       - name: Google Auth
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Verify Authentication
+        run: |
+          echo "Verifying authentication..."
+          gcloud auth list
+          gcloud config list project
+          gsutil ls gs://${{ env.BUCKET_NAME }} || (echo "Cannot access bucket, check permissions" && exit 1)
+
       - name: Upload to Cloud Storage
         run: |
+          echo "Starting upload..."
           gsutil -m rsync -r dist/client gs://${{ env.BUCKET_NAME }}
+          echo "Setting cache headers..."
           gsutil -m setmeta -h "Cache-Control:public, max-age=31536000" gs://${{ env.BUCKET_NAME }}/assets/**
           gsutil -m setmeta -h "Cache-Control:no-cache" gs://${{ env.BUCKET_NAME }}/index.html
+
+      - name: Make bucket public
+        run: |
+          gsutil iam ch allUsers:objectViewer gs://${{ env.BUCKET_NAME }}

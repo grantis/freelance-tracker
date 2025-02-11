@@ -8,6 +8,7 @@
     "sourceMap": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
+    "types": ["node", "@types/cors"],
     "paths": {
       "@db": ["./server/db/index.js"],
       "@db/*": ["./server/db/*"]
