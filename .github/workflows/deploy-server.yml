@@ -47,5 +47,4 @@ jobs:
             DOMAIN=freelance.grantrigby.dev
           secrets: |
             DATABASE_URL=freelance-db-url:latest
-            GOOGLE_CLIENT_ID=google-client-id:latest
-            GOOGLE_CLIENT_SECRET=google-client-secret:latest
+            DB_PASSWORD=db-password:latest

@@ -5,9 +5,10 @@
   "license": "MIT",
   "scripts": {
     "dev": "vite",
-    "build:client": "vite build",
-    "build:server": "tsc -p tsconfig.server.json && mkdir -p dist/server/db && [ -d server/db/migrations ] && cp -r server/db/migrations dist/server/db/ || true",
+    "build:client": "tsc -p client/tsconfig.json && vite build",
+    "build:server": "tsc -p server/tsconfig.json && cp -r server/db/migrations dist/server/db/ 2>/dev/null || true",
     "build": "rm -rf dist && npm run build:client && npm run build:server",
+    "type-check": "tsc -p client/tsconfig.json && tsc -p server/tsconfig.json --noEmit",    
     "start": "node dist/server/index.js",
     "check": "tsc",
     "db:start": "brew services start postgresql@16",

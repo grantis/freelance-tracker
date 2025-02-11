@@ -1,24 +1,19 @@
 {
-  "include": ["client/src/**/*", "server/**/*"],
-  "exclude": ["node_modules", "build", "dist", "**/*.test.ts"],
   "compilerOptions": {
-    "incremental": true,
-    "tsBuildInfoFile": "./node_modules/typescript/tsbuildinfo",
-    "noEmit": true,
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
     "strict": true,
-    "lib": ["esnext", "dom", "dom.iterable"],
-    "jsx": "preserve",
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "allowImportingTsExtensions": true,
+    "target": "ES2020",
+    "moduleResolution": "Bundler",
+    "module": "ESNext",
+    "jsx": "react-jsx",
     "baseUrl": ".",
-    "types": ["node", "vite/client"],
     "paths": {
       "@/*": ["client/src/*"],
       "@db": ["server/db/index.ts"],
       "@db/*": ["server/db/*"]
-    }
-  }
+    },
+    "lib": ["ESNext", "DOM", "DOM.Iterable"]
+  },
+  "exclude": ["node_modules", "dist"]
 }

@@ -1,0 +1,16 @@
+{
+    "extends": "../tsconfig.json",
+    "compilerOptions": {
+      "module": "NodeNext",
+      "moduleResolution": "NodeNext",
+      "outDir": "../dist/server",
+      "sourceMap": true,
+      "types": ["node", "@types/cors"],
+      "paths": {
+        "@db": ["./db/index.ts"],
+        "@db/*": ["./db/*"]
+      }
+    },
+    "include": ["./**/*.ts"],
+    "exclude": ["../node_modules"]
+  }
