@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build:client": "vite build",
-    "build:server": "tsc -p tsconfig.server.json && cp -r server/db/migrations dist/server/db/",
+    "build:server": "tsc -p tsconfig.server.json && mkdir -p dist/server/db && [ -d server/db/migrations ] && cp -r server/db/migrations dist/server/db/ || true",
     "build": "rm -rf dist && npm run build:client && npm run build:server",
     "start": "node dist/server/index.js",
     "check": "tsc",
