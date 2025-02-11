@@ -19,7 +19,7 @@ const DOMAIN = process.env.NODE_ENV === 'production'
 
 const CALLBACK_URL = `${process.env.NODE_ENV === 'production' || process.env.REPL_SLUG ? 'https' : 'http'}://${DOMAIN}/api/auth/google/callback`;
 
-export function registerRoutes(app: Express): Server {
+export function registerRoutes(app: Express): void {
   app.use(session({
     secret: sessionSecret,
     resave: false,
@@ -402,7 +402,4 @@ export function registerRoutes(app: Express): Server {
       res.status(500).json({ message: 'Server error' });
     }
   });
-
-  const httpServer = createServer(app);
-  return httpServer;
 }

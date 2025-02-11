@@ -5,6 +5,7 @@ import { config } from "dotenv";
 import cors from "cors";
 import path, { dirname } from "path";
 import { fileURLToPath } from "url";
+import { createServer } from "http";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -22,6 +23,7 @@ config();
 
 const app = express();
 const port = Number(process.env.PORT) || 8080;
+const server = createServer(app);
 
 // Log startup information
 console.log('=== Starting Server ===');
@@ -97,7 +99,7 @@ if (process.env.NODE_ENV === 'production') {
     console.log('✓ Database connection successful');
 
     console.log('Setting up application routes...');
-    const server = registerRoutes(app);
+    registerRoutes(app);
     console.log('✓ Routes registered successfully');
 
     // Error handling middleware
@@ -109,11 +111,9 @@ if (process.env.NODE_ENV === 'production') {
       throw err;
     });
 
-    // Start the server
+    // Use the single server instance
     server.listen(port, '0.0.0.0', () => {
       console.log(`Server is running at http://0.0.0.0:${port}`);
-    }).on('error', (err: Error) => {
-      console.error('Server error:', err);
     });
 
     // Handle shutdown
