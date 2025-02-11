@@ -51,3 +51,10 @@ jobs:
             DB_PASSWORD=db-password:latest
             GOOGLE_CLIENT_ID=google-client-id:latest
             GOOGLE_CLIENT_SECRET=google-client-secret:latest
+          flags: |
+            --cpu=1
+            --memory=512Mi
+            --port=8080
+            --min-instances=1
+            --max-instances=10
+            --set-cloudsql-instances=grantrigbydev:us-central1:freelance-db

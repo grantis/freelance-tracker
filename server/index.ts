@@ -25,10 +25,12 @@ const app = express();
 const port = Number(process.env.PORT) || 8080;
 const server = createServer(app);
 
-// Log startup information
-console.log('=== Starting Server ===');
-console.log('Environment:', process.env.NODE_ENV);
-console.log('Port:', port);
+// Add early logging
+console.log('Starting server with configuration:', {
+  port,
+  nodeEnv: process.env.NODE_ENV,
+  domain: process.env.DOMAIN
+});
 
 // Trust proxy - important for correct protocol detection behind proxies
 app.set('trust proxy', 1);
@@ -76,6 +78,7 @@ app.use((req, res, next) => {
 
 // Health check endpoint
 app.get('/health', (req, res) => {
+  console.log('Health check requested');
   res.send('OK');
 });
 
@@ -98,22 +101,17 @@ if (process.env.NODE_ENV === 'production') {
     await db.query.users.findMany();
     console.log('✓ Database connection successful');
 
+    // Register routes
     console.log('Setting up application routes...');
     registerRoutes(app);
     console.log('✓ Routes registered successfully');
 
-    // Error handling middleware
-    app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-      console.error('Server error:', err);
-      const status = err.status || err.statusCode || 500;
-      const message = err.message || "Internal Server Error";
-      res.status(status).json({ message });
-      throw err;
-    });
-
-    // Use the single server instance
+    // Start server
     server.listen(port, '0.0.0.0', () => {
       console.log(`Server is running at http://0.0.0.0:${port}`);
+    }).on('error', (err: Error) => {
+      console.error('Server failed to start:', err);
+      process.exit(1);
     });
 
     // Handle shutdown
