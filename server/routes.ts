@@ -13,9 +13,7 @@ const SessionStore = MemoryStore(session);
 const sessionSecret = crypto.randomBytes(32).toString('hex');
 
 const ADMIN_EMAIL = "grantrigby1992@gmail.com";
-const DOMAIN = process.env.REPL_SLUG 
-  ? `${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.replit.dev`
-  : process.env.NODE_ENV === 'production' 
+const DOMAIN = process.env.NODE_ENV === 'production' 
     ? 'freelance.grantrigby.dev'
     : 'localhost';  
 
