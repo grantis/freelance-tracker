@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build:client": "vite build",
-    "build:server": "tsc -p tsconfig.server.json",
-    "build": "npm run build:client && npm run build:server",
+    "build:server": "tsc -p tsconfig.server.json && cp -r server/db/migrations dist/server/db/",
+    "build": "rm -rf dist && npm run build:client && npm run build:server",
     "start": "node dist/server/index.js",
     "check": "tsc",
     "db:start": "brew services start postgresql@16",

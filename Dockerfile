@@ -34,4 +34,7 @@ ENV NODE_ENV=production
 ENV PORT=8080
 EXPOSE 8080
 
+# Verify the build output before starting
+RUN ls -la /app/dist/server
+
 CMD ["node", "dist/server/index.js"] 
