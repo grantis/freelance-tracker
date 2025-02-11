@@ -8,7 +8,8 @@
       "paths": {
         "@db": ["./db/index.ts"],
         "@db/*": ["./db/*"]
-      }
+      },
+      "types": ["node", "vite/client"]
     },
     "include": ["./**/*.ts"],
     "exclude": ["node_modules", "dist"]
