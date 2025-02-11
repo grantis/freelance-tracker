@@ -10,8 +10,8 @@ RUN npm ci
 # Copy source
 COPY . .
 
-# Build application
-RUN npm run build
+# Build server only
+RUN npm run build:server
 
 # Production stage
 FROM node:20-slim
@@ -22,8 +22,8 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci --only=production
 
-# Copy built files
-COPY --from=builder /app/dist ./dist
+# Copy built server files
+COPY --from=builder /app/dist/server ./dist/server
 
 # Add container health check
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \

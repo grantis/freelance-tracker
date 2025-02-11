@@ -3,6 +3,7 @@ import { registerRoutes } from "./routes.js";
 import { setupVite, serveStatic, log } from "./vite.js";
 import { db } from "@db";
 import { config } from "dotenv";
+import cors from "cors";
 
 // Enable detailed logging
 process.on('unhandledRejection', (reason, promise) => {
@@ -28,6 +29,13 @@ app.set('trust proxy', 1);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['https://freelance.grantrigby.dev']
+    : ['http://localhost:5000'],
+  credentials: true
+}));
 
 app.use((req, res, next) => {
   const start = Date.now();

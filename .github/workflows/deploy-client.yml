@@ -1,0 +1,46 @@
+name: Deploy Client
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'client/**'
+      - 'package*.json'
+      - '.github/workflows/deploy-client.yml'
+
+env:
+  PROJECT_ID: grantrigbydev
+  BUCKET_NAME: freelance-grantrigby-dev
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build Client
+        run: npm run build:client
+        env:
+          VITE_API_URL: https://freelance-api-xxxxx-uc.a.run.app
+          VITE_GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+
+      - name: Google Auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Upload to Cloud Storage
+        run: |
+          gsutil -m rsync -r dist/client gs://${{ env.BUCKET_NAME }}
+          gsutil -m setmeta -h "Cache-Control:public, max-age=31536000" gs://${{ env.BUCKET_NAME }}/assets/**
+          gsutil -m setmeta -h "Cache-Control:no-cache" gs://${{ env.BUCKET_NAME }}/index.html
