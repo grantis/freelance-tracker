@@ -1,16 +1,15 @@
 {
     "extends": "../tsconfig.json",
     "compilerOptions": {
-      "module": "NodeNext",
-      "moduleResolution": "NodeNext",
       "outDir": "../dist/server",
-      "sourceMap": true,
-      "types": ["node", "@types/cors"],
+      "module": "ESNext",
+      "moduleResolution": "Bundler",
+      "baseUrl": ".",
       "paths": {
         "@db": ["./db/index.ts"],
         "@db/*": ["./db/*"]
       }
     },
     "include": ["./**/*.ts"],
-    "exclude": ["../node_modules"]
+    "exclude": ["node_modules", "dist"]
   }
