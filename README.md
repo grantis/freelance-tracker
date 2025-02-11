@@ -89,3 +89,4 @@ MIT License - see LICENSE file for details
 ## Author
 
 Grant Rigby ([@grantis](https://github.com/grantis))
+
