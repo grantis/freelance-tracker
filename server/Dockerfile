@@ -3,10 +3,11 @@ FROM node:20-slim AS builder
 
 WORKDIR /app
 
-# Copy package files from all workspaces
+# Copy root package files
 COPY package*.json ./
+
+# Copy server package files
 COPY server/package*.json ./server/
-COPY packages/types/package*.json ./packages/types/
 
 # Install dependencies including TypeScript
 RUN npm ci
