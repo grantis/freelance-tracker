@@ -1,9 +1,13 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes.js";
-import { setupVite, serveStatic, log } from "./vite.js";
 import { db } from "@db";
 import { config } from "dotenv";
 import cors from "cors";
+import path, { dirname } from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // Enable detailed logging
 process.on('unhandledRejection', (reason, promise) => {
@@ -24,7 +28,7 @@ console.log('=== Starting Server ===');
 console.log('Environment:', process.env.NODE_ENV);
 console.log('Port:', port);
 
-// Trust proxy - important for correct protocol detection behind Replit's proxy
+// Trust proxy - important for correct protocol detection behind proxies
 app.set('trust proxy', 1);
 
 app.use(express.json());
@@ -37,6 +41,7 @@ app.use(cors({
   credentials: true
 }));
 
+// Request logging middleware
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
@@ -60,7 +65,7 @@ app.use((req, res, next) => {
         logLine = logLine.slice(0, 79) + "…";
       }
 
-      log(logLine);
+      console.log(`${new Date().toLocaleTimeString()} [express] ${logLine}`);
     }
   });
 
@@ -71,6 +76,17 @@ app.use((req, res, next) => {
 app.get('/health', (req, res) => {
   res.send('OK');
 });
+
+// Serve static files in production
+if (process.env.NODE_ENV === 'production') {
+  const clientDist = path.resolve(__dirname, "..", "dist", "client");
+  app.use(express.static(clientDist));
+  
+  // Serve index.html for all non-API routes to support client-side routing
+  app.get(/^(?!\/?api).+/, (req, res) => {
+    res.sendFile(path.resolve(clientDist, "index.html"));
+  });
+}
 
 (async () => {
   console.log('Starting server initialization...');
@@ -84,6 +100,7 @@ app.get('/health', (req, res) => {
     const server = registerRoutes(app);
     console.log('✓ Routes registered successfully');
 
+    // Error handling middleware
     app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
       console.error('Server error:', err);
       const status = err.status || err.statusCode || 500;
@@ -91,16 +108,6 @@ app.get('/health', (req, res) => {
       res.status(status).json({ message });
       throw err;
     });
-
-    if (app.get("env") === "development") {
-      console.log('Setting up Vite in development mode...');
-      await setupVite(app, server);
-      console.log('✓ Vite setup complete');
-    } else {
-      console.log('Setting up static serving for production...');
-      serveStatic(app);
-      console.log('✓ Static serving setup complete');
-    }
 
     // Start the server
     server.listen(port, '0.0.0.0', () => {
