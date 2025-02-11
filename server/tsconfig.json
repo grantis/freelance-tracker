@@ -9,7 +9,7 @@
         "@db": ["./db/index.ts"],
         "@db/*": ["./db/*"]
       },
-      "types": ["node", "vite/client"]
+      "types": ["node"]
     },
     "include": ["./**/*.ts"],
     "exclude": ["node_modules", "dist"]
